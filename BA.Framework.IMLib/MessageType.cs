@@ -12,7 +12,7 @@ namespace BA.Framework.IMLib
     public enum MessageType
     {
         //命令消息
-        ACK,
+        Ack,
         Connect,
         Disconnect,
 

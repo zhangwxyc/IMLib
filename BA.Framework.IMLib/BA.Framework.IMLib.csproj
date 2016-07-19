@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommonExt.cs" />
+    <Compile Include="CustomEnumJsonConverter.cs" />
     <Compile Include="ErrorEventArgs.cs" />
     <Compile Include="FileMessageInfo.cs" />
     <Compile Include="FileProcessType.cs" />

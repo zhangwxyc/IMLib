@@ -25,24 +25,24 @@ namespace SimpleTest
                         server.Disconnect();
                         break;
                     }
-                    server.SendText("12345", "111", sendTxt, SendCallback);
+                    server.SendText("star", "111", sendTxt, SendCallback);
                 }
             }
         }
 
         public static void SendCallback(RequestInfo rqInfo, ResponseAckInfo ackInfo)
         {
-
+            Console.WriteLine("SendCallback:{0}", ackInfo.MessageId);
         }
 
         static void server_OnReceive(object arg1, IMEventArgs arg2)
         {
-
+            Console.WriteLine("server_OnReceive:{0}", arg2._ResponseInfo.MessageId);
         }
 
         public static void Connected(RequestInfo rqInfo, ResponseAckInfo ackInfo)
         {
-
+            Console.WriteLine("Connected:{0}", ackInfo.MessageId);
         }
     }
 }
