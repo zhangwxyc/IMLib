@@ -13,6 +13,6 @@ namespace BA.Framework.IMLib
 
         bool Send(MessageType type, string to, string group, object data, Action<RequestInfo, ResponseAckInfo> callback);
 
-        event Action<object, IMEventArgs> OnReceive;
+        event Action<MessageType, string, string, string, int, object> OnReceive;
     }
 }

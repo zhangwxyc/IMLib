@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 
-namespace BA.Framework.IMLib
+namespace BA.Framework.IMLib.Message
 {
     public class FileMessageInfo
     {
@@ -37,5 +37,6 @@ namespace BA.Framework.IMLib
                 Status = 0
             };
         }
+    
     }
 }

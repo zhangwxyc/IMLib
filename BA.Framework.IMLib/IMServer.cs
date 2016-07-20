@@ -16,26 +16,40 @@ namespace BA.Framework.IMLib
         /// <summary>
         /// 接收用户消息事件
         /// </summary>
-        public event Action<object, IMEventArgs> OnReceive;
-        public event Action<object, UploadProgressChangedEventArgs> OnUpload;
-        public event Action<object, DownloadProgressChangedEventArgs> OnDownload;
-
+        public event Action<MessageType, string, string, string, int, object> OnReceive;
+        public event Action<string, long, long> OnUpload;
+        public event Action<string, long, long> OnDownload;
         public event Action<object, ErrorEventArgs> OnError;
-
-
-        private string IpAddress { get; set; }
-        private int Port { get; set; }
+        public event Action OnDisconnect;
 
         private Socket _client;
 
+        private DateTime _lastPingTime;
+
+        /// <summary>
+        /// 当前用户验证信息
+        /// </summary>
         private UserIdentity _user;
+
+        /// <summary>
+        /// 当前连接是否可用
+        /// </summary>
         public bool IsAvailable
         {
             get
             {
-                return _client.Connected && _user.IsAuthenticated;
+                if (_client.Connected && _user.IsAuthenticated)
+                {
+                    //被动心跳检测
+                    if (_lastPingTime.AddSeconds(30) < DateTime.Now)
+                    {
+                        Disconnect();
+                        return false;
+                    }
+                    return true;
+                }
+                return false;
             }
-
         }
 
         private ConcurrentBag<RequestInfo> _sendBuffer;
@@ -46,11 +60,34 @@ namespace BA.Framework.IMLib
 
         string _syncObject = "";
 
+        //socket缓存区大小,1024字节
         private const int BufferSize = 1024;
-        public IMServer(string ipAddress, int port)
+
+        //心跳检测超时时间，30s
+        private const int HeartTimeOut = 30;
+
+        /// <summary>
+        /// 断线重连间隔,5s
+        /// </summary>
+        private const int ConnectRetryInnerTime = 5;
+
+        /// <summary>
+        /// 断线重连次数，默认5次
+        /// </summary>
+        private int _connectRetryTimes = 5;
+
+        /// <summary>
+        /// 断线重连次数，可设置
+        /// </summary>
+        public int ConnectRetryTimes
         {
-            this.IpAddress = ipAddress;
-            this.Port = port;
+            get { return _connectRetryTimes; }
+            set { _connectRetryTimes = value; }
+        }
+
+
+        public IMServer()
+        {
             _client = new Socket(SocketType.Stream, ProtocolType.Tcp);
 
             _user = new UserIdentity();
@@ -58,6 +95,20 @@ namespace BA.Framework.IMLib
             _receiveBuffer = new ConcurrentQueue<string>();
             _fileMsgQueue = new ConcurrentBag<FileMessageInfo>();
         }
+
+        //private string IpAddress { get; set; }
+        //private int Port { get; set; }
+        //public IMServer(string ipAddress, int port)
+        //{
+        //    this.IpAddress = ipAddress;
+        //    this.Port = port;
+        //    _client = new Socket(SocketType.Stream, ProtocolType.Tcp);
+
+        //    _user = new UserIdentity();
+        //    _sendBuffer = new ConcurrentBag<RequestInfo>();
+        //    _receiveBuffer = new ConcurrentQueue<string>();
+        //    _fileMsgQueue = new ConcurrentBag<FileMessageInfo>();
+        //}
 
 
 
@@ -121,6 +172,7 @@ namespace BA.Framework.IMLib
 
                         //连接使用同步
                         // _sendBuffer.Add(requestInfo);
+                        _lastPingTime = DateTime.Now;
                         callback(requestInfo, responseInfo);
                         //启动线程接收
                         AfterConnectedServer();
@@ -139,6 +191,21 @@ namespace BA.Framework.IMLib
 
             }
             return false;
+        }
+
+
+        /// <summary>
+        /// 关闭连接
+        /// </summary>
+        public void Disconnect()
+        {
+            if (_client.Connected)
+            {
+                //close
+                _user.IsAuthenticated = false;
+                _client.Disconnect(false);
+            }
+            OnDisconnect();
         }
 
         #region AfterConnectedServer
@@ -188,11 +255,15 @@ namespace BA.Framework.IMLib
                 var responseAckInfo = bufferMessage.ToObject<Message.ResponseAckInfo>();
                 if (requestInfo != null && requestInfo.Callback != null)
                 {
+                    MessageContext context = new MessageContext() { IMRequest = requestInfo, IMResponse = responseAckInfo };
                     if (IsFileMessage(requestInfo.MsgType))
-                    {
-                        ProcessFileMessage(requestInfo, responseAckInfo);
+                    {//文件类型消息延迟回调
+                        ProcessFileMessage(context);
                     }
-                    requestInfo.Callback(requestInfo, responseAckInfo);
+                    else
+                    {//非文件类消息收到ack直接回调
+                        requestInfo.Callback(requestInfo, responseAckInfo);
+                    }
                 }
             }
             else
@@ -200,28 +271,16 @@ namespace BA.Framework.IMLib
                 var responseInfo = bufferMessage.ToObject<Message.ResponseInfo>();
                 if (IsFileMessage(responseInfo.MsgType))
                 {
-                    //
+                    //用户自己根据url下载，无需处理
                 }
                 if (OnReceive != null)
                 {
-                    OnReceive(this, new IMEventArgs() { _ResponseInfo = responseInfo });
+                    OnReceive(responseInfo.MsgType, responseInfo.FromId, responseInfo.GroupId, responseInfo.MessageId, responseInfo.MsgTime, responseInfo.Data);
                 }
 
             }
         }
 
-        /// <summary>
-        /// 对文件类型消息进行处理
-        /// </summary>
-        /// <param name="requestInfo"></param>
-        /// <param name="responseAckInfo"></param>
-        private void ProcessFileMessage(RequestInfo requestInfo, ResponseAckInfo responseAckInfo)
-        {
-            if (responseAckInfo.Status == ResponseCode.BAD_REQUEST)
-            {
-                Upload(requestInfo);
-            }
-        }
 
         /// <summary>
         /// 是否是文件类型消息
@@ -246,19 +305,26 @@ namespace BA.Framework.IMLib
 
         #endregion
 
-        /// <summary>
-        /// 关闭连接
-        /// </summary>
-        public void Disconnect()
-        {
-            if (_client.Connected)
-            {
-                //close
-                _user.IsAuthenticated = false;
-                _client.Disconnect(false);
-            }
-        }
 
+        /// <summary>
+        /// 对文件类型消息进行处理
+        /// </summary>
+        /// <param name="requestInfo"></param>
+        /// <param name="responseAckInfo"></param>
+        private void ProcessFileMessage(MessageContext info)
+        {
+            ResponseAckInfo responseAckInfo = info.IMResponse;
+            if (responseAckInfo.Status == ResponseCode.OK)
+            {
+                if (((IDictionary<string, object>)(responseAckInfo.Data)).ContainsKey("upload_url")
+                    && !string.IsNullOrWhiteSpace(responseAckInfo.Data.upload_url))
+                {
+                    Upload(info);
+                    return;
+                }
+            }
+            info.IMRequest.Callback(info.IMRequest, info.IMResponse);
+        }
 
         public bool Send(MessageType type, string to, string group, object data, Action<RequestInfo, ResponseAckInfo> callback)
         {
@@ -327,15 +393,16 @@ namespace BA.Framework.IMLib
 
         public string ServerHttpUrl { get; set; }
 
-        private bool Upload(RequestInfo requestFile)
+        private bool Upload(MessageContext contextInfo)
         {
-            FileMessageInfo info = FileMessageInfo.Create(ServerHttpUrl);
-            info.MessageId = requestFile.MessageId;
+            FileMessageInfo info = FileMessageInfo.Create(contextInfo.IMResponse.Data.upload_url);
+            info.MessageId = contextInfo.IMRequest.MessageId;
             info.ProcessType = FileProcessType.UPLOAD;
-            string path = requestFile.Data.path;
+            string path = contextInfo.IMRequest.Data.Path;
             info.Client.UploadProgressChanged += webClient_UploadProgressChanged;
             info.Client.UploadDataCompleted += Client_UploadDataCompleted;
-            info.Client.UploadFileAsync(new Uri(path), "POST", path, info);
+            contextInfo.IMRequest.RelateFileInfo = info;
+            info.Client.UploadFileAsync(new Uri(path), "POST", path, contextInfo);
             info.Status = 1;
             _fileMsgQueue.Add(info);
             return true;
@@ -344,7 +411,8 @@ namespace BA.Framework.IMLib
 
         void Client_UploadDataCompleted(object sender, UploadDataCompletedEventArgs e)
         {
-            var fileMsgInfo = e.UserState as FileMessageInfo;
+            var contextInfo = e.UserState as MessageContext;
+            var fileMsgInfo = contextInfo.IMRequest.RelateFileInfo;
             if (e.Error != null)
             {
                 fileMsgInfo.Status = 4;
@@ -353,13 +421,15 @@ namespace BA.Framework.IMLib
             else
             {
                 fileMsgInfo.Status = 2;
+                contextInfo.IMRequest.Callback(contextInfo.IMRequest, contextInfo.IMResponse);
             }
             fileMsgInfo.Client.Dispose();
         }
 
         void webClient_UploadProgressChanged(object sender, UploadProgressChangedEventArgs e)
         {
-            OnUpload(sender, e);
+            var contextInfo = e.UserState as MessageContext;
+            OnUpload(contextInfo.IMRequest.MessageId, e.BytesSent, e.TotalBytesToSend);
         }
 
         public string DownloadPath { get; set; }
@@ -391,7 +461,8 @@ namespace BA.Framework.IMLib
 
         void webClient_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
         {
-            OnDownload(sender, e);
+            var contextInfo = e.UserState as MessageContext;
+            OnDownload(contextInfo.IMRequest.MessageId, e.BytesReceived, e.TotalBytesToReceive);
         }
 
 

@@ -11,7 +11,7 @@ namespace SimpleTest
     {
         static void Main(string[] args)
         {
-            IMServer server = new IMServer("192.168.87.114", 8282);
+            IMServer server = new IMServer();
             bool isConnected = server.Connect("192.168.87.114", 8282, "new", "star", "pc", Guid.NewGuid().ToString(), Connected);
             server.OnReceive += server_OnReceive;
             if (isConnected)
@@ -30,14 +30,14 @@ namespace SimpleTest
             }
         }
 
-        public static void SendCallback(RequestInfo rqInfo, ResponseAckInfo ackInfo)
+        static void server_OnReceive(MessageType arg1, string arg2, string arg3, string arg4, int arg5, object arg6)
         {
-            Console.WriteLine("SendCallback:{0}", ackInfo.MessageId);
+            Console.WriteLine("server_OnReceive:{0}", arg4);
         }
 
-        static void server_OnReceive(object arg1, IMEventArgs arg2)
+        public static void SendCallback(RequestInfo rqInfo, ResponseAckInfo ackInfo)
         {
-            Console.WriteLine("server_OnReceive:{0}", arg2._ResponseInfo.MessageId);
+             
         }
 
         public static void Connected(RequestInfo rqInfo, ResponseAckInfo ackInfo)

@@ -22,5 +22,10 @@ namespace BA.Framework.IMLib.Message
         {
             MessageId = Guid.NewGuid().ToString();
         }
+        /// <summary>
+        /// 文件类消息包含此属性
+        /// </summary>
+        [JsonIgnore]
+        public FileMessageInfo RelateFileInfo { get; set; }
     }
 }

@@ -46,13 +46,14 @@
     <Compile Include="CommonExt.cs" />
     <Compile Include="CustomEnumJsonConverter.cs" />
     <Compile Include="ErrorEventArgs.cs" />
-    <Compile Include="FileMessageInfo.cs" />
+    <Compile Include="Message\FileMessageInfo.cs" />
     <Compile Include="FileProcessType.cs" />
     <Compile Include="IIMServer.cs" />
     <Compile Include="IMEventArgs.cs" />
     <Compile Include="IMServer.cs" />
     <Compile Include="MessageType.cs" />
     <Compile Include="Message\BaseMessageInfo.cs" />
+    <Compile Include="Message\MessageContext.cs" />
     <Compile Include="Message\RequestInfo.cs" />
     <Compile Include="Message\ResponseAckInfo.cs" />
     <Compile Include="Message\ResponseInfo.cs" />
