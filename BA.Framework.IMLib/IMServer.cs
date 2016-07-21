@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BA.Framework.IMLib
@@ -21,6 +22,7 @@ namespace BA.Framework.IMLib
         public event Action<string, long, long> OnDownload;
         public event Action<object, ErrorEventArgs> OnError;
         public event Action OnDisconnect;
+        public event Action OnReConnected;
 
         private Socket _client;
 
@@ -41,7 +43,7 @@ namespace BA.Framework.IMLib
                 if (_client.Connected && _user.IsAuthenticated)
                 {
                     //被动心跳检测
-                    if (_lastPingTime.AddSeconds(30) < DateTime.Now)
+                    if (_lastPingTime.AddSeconds(HeartTimeOut) < DateTime.Now)
                     {
                         Disconnect();
                         return false;
@@ -64,7 +66,7 @@ namespace BA.Framework.IMLib
         private const int BufferSize = 1024;
 
         //心跳检测超时时间，30s
-        private const int HeartTimeOut = 30;
+        private const int HeartTimeOut = 300;
 
         /// <summary>
         /// 断线重连间隔,5s
@@ -96,8 +98,9 @@ namespace BA.Framework.IMLib
             _fileMsgQueue = new ConcurrentBag<FileMessageInfo>();
         }
 
-        //private string IpAddress { get; set; }
-        //private int Port { get; set; }
+        private string IpAddress { get; set; }
+        private int Port { get; set; }
+
         //public IMServer(string ipAddress, int port)
         //{
         //    this.IpAddress = ipAddress;
@@ -154,6 +157,8 @@ namespace BA.Framework.IMLib
             try
             {
                 _client.Connect(host, port);
+                IpAddress = IpAddress;
+                Port = port;
                 if (_client.Connected)
                 {
                     byte[] sendData = requestInfo.ToByte<Message.RequestInfo>();
@@ -173,7 +178,10 @@ namespace BA.Framework.IMLib
                         //连接使用同步
                         // _sendBuffer.Add(requestInfo);
                         _lastPingTime = DateTime.Now;
-                        callback(requestInfo, responseInfo);
+                        if (callback != null)
+                        {
+                            callback(requestInfo, responseInfo);
+                        }
                         //启动线程接收
                         AfterConnectedServer();
                         return true;
@@ -187,8 +195,10 @@ namespace BA.Framework.IMLib
             }
             catch (Exception ex)
             {
-                //Log
-
+                if (callback != null)
+                {
+                    callback(requestInfo, new ResponseAckInfo() { MsgType = MessageType.Ack, Status = ResponseCode.TIMEOUT, Data = ex });
+                }
             }
             return false;
         }
@@ -205,7 +215,29 @@ namespace BA.Framework.IMLib
                 _user.IsAuthenticated = false;
                 _client.Disconnect(false);
             }
-            OnDisconnect();
+            if (OnDisconnect != null)
+            {
+                OnDisconnect();
+            }
+        }
+
+        /// <summary>
+        /// 重连
+        /// </summary>
+        private void ReConnect()
+        {
+            for (int index = 0; index < ConnectRetryTimes; index++)
+            {
+                if (Connect(IpAddress, Port, _user.AuthenticationType, _user.Name, _user.UserAgent, _user.Token, null))
+                {
+                    if (OnReConnected != null)
+                    {
+                        OnReConnected();
+                    }
+                    break;
+                }
+                Thread.Sleep(ConnectRetryInnerTime);
+            }
         }
 
         #region AfterConnectedServer
@@ -273,6 +305,7 @@ namespace BA.Framework.IMLib
                 {
                     //用户自己根据url下载，无需处理
                 }
+                
                 if (OnReceive != null)
                 {
                     OnReceive(responseInfo.MsgType, responseInfo.FromId, responseInfo.GroupId, responseInfo.MessageId, responseInfo.MsgTime, responseInfo.Data);
@@ -292,9 +325,7 @@ namespace BA.Framework.IMLib
             switch (messageType)
             {
                 case MessageType.Image:
-                    break;
                 case MessageType.Voice:
-                    break;
                 case MessageType.Video:
                     return true;
                 default:
@@ -316,8 +347,9 @@ namespace BA.Framework.IMLib
             ResponseAckInfo responseAckInfo = info.IMResponse;
             if (responseAckInfo.Status == ResponseCode.OK)
             {
-                if (((IDictionary<string, object>)(responseAckInfo.Data)).ContainsKey("upload_url")
-                    && !string.IsNullOrWhiteSpace(responseAckInfo.Data.upload_url))
+                object upload_url = ((Newtonsoft.Json.Linq.JObject)(responseAckInfo.Data)).GetValue("upload_url");
+                if (upload_url != null
+                    && !string.IsNullOrWhiteSpace(upload_url.ToString()))
                 {
                     Upload(info);
                     return;
@@ -334,8 +366,7 @@ namespace BA.Framework.IMLib
                 MessageId = TimeStamp.Create(),
                 ToId = to,
                 GroupId = group,
-                Data = data
-                 ,
+                Data = data,
                 Callback = callback
             };
 
@@ -344,19 +375,26 @@ namespace BA.Framework.IMLib
             {
                 if (callback != null)
                 {
-                    callback(requestInfo, new ResponseAckInfo() { MsgType = MessageType.Ack, Status = ResponseCode.BAD_REQUEST });
+                    callback(requestInfo, new ResponseAckInfo() { MsgType = MessageType.Ack, Status = ResponseCode.NO_AUTH });
                 }
                 return false;
             }
 
+            try
+            {
+                byte[] sendData = requestInfo.ToByte<Message.RequestInfo>();
 
-            byte[] sendData = requestInfo.ToByte<Message.RequestInfo>();
+                _sendBuffer.Add(requestInfo);
 
-            _sendBuffer.Add(requestInfo);
+                _client.BeginSend(sendData, 0, sendData.Length, SocketFlags.None, null, _client);
 
-            _client.BeginSend(sendData, 0, sendData.Length, SocketFlags.None, null, _client);
-
-            return true;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                callback(requestInfo, new ResponseAckInfo() { Data = ex, MessageId = requestInfo.MessageId, MsgType = MessageType.Ack, Status = ResponseCode.TIMEOUT });
+                return false;
+            }
         }
 
         public bool SendText(string to, string group, string content, Action<RequestInfo, ResponseAckInfo> callback)
@@ -372,7 +410,7 @@ namespace BA.Framework.IMLib
             }
             FileInfo fileInfo = new FileInfo(path);
 
-            return Send(MessageType.Text, to, group, new
+            return Send(type, to, group, new
             {
                 path = path, // 文件路径
                 name = Path.GetFileName(path), // 文件名称
@@ -391,39 +429,43 @@ namespace BA.Framework.IMLib
             return Send(MessageType.Invite, to, group, "", null);
         }
 
-        public string ServerHttpUrl { get; set; }
+        //public string ServerHttpUrl { get; set; }
 
         private bool Upload(MessageContext contextInfo)
         {
-            FileMessageInfo info = FileMessageInfo.Create(contextInfo.IMResponse.Data.upload_url);
+            FileMessageInfo info = FileMessageInfo.Create(contextInfo.IMResponse.Data.upload_url.ToString());
             info.MessageId = contextInfo.IMRequest.MessageId;
             info.ProcessType = FileProcessType.UPLOAD;
-            string path = contextInfo.IMRequest.Data.Path;
+            string path = contextInfo.IMRequest.Data.path;
             info.Client.UploadProgressChanged += webClient_UploadProgressChanged;
-            info.Client.UploadDataCompleted += Client_UploadDataCompleted;
+            info.Client.UploadFileCompleted += Client_UploadFileCompleted;
             contextInfo.IMRequest.RelateFileInfo = info;
-            info.Client.UploadFileAsync(new Uri(path), "POST", path, contextInfo);
+            info.Client.UploadFileAsync(new Uri(contextInfo.IMResponse.Data.upload_url.ToString() + "123"), "POST", path, contextInfo);
             info.Status = 1;
             _fileMsgQueue.Add(info);
             return true;
 
         }
 
-        void Client_UploadDataCompleted(object sender, UploadDataCompletedEventArgs e)
+
+        void Client_UploadFileCompleted(object sender, UploadFileCompletedEventArgs e)
         {
             var contextInfo = e.UserState as MessageContext;
             var fileMsgInfo = contextInfo.IMRequest.RelateFileInfo;
             if (e.Error != null)
             {
                 fileMsgInfo.Status = 4;
-                OnError(sender, new ErrorEventArgs() { ExceptionInfo = e.Error, MsgId = fileMsgInfo.MessageId, ProcessType = fileMsgInfo.ProcessType });
+                contextInfo.IMRequest.Callback(contextInfo.IMRequest, new ResponseAckInfo() { Data = e.Error, MessageId = contextInfo.IMRequest.MessageId, MsgType = MessageType.Ack, Status = ResponseCode.TIMEOUT });
+
+                //暂时不传递到异常事件中去
+                //OnError(sender, new ErrorEventArgs() { ExceptionInfo = e.Error, MsgId = fileMsgInfo.MessageId, ProcessType = fileMsgInfo.ProcessType });
             }
             else
             {
                 fileMsgInfo.Status = 2;
                 contextInfo.IMRequest.Callback(contextInfo.IMRequest, contextInfo.IMResponse);
             }
-            fileMsgInfo.Client.Dispose();
+            //fileMsgInfo.Client.Dispose();
         }
 
         void webClient_UploadProgressChanged(object sender, UploadProgressChangedEventArgs e)
@@ -432,7 +474,7 @@ namespace BA.Framework.IMLib
             OnUpload(contextInfo.IMRequest.MessageId, e.BytesSent, e.TotalBytesToSend);
         }
 
-        public string DownloadPath { get; set; }
+        //public string DownloadPath { get; set; }
 
 
         /// <summary>
@@ -440,29 +482,46 @@ namespace BA.Framework.IMLib
         /// </summary>
         /// <param name="fileURL"></param>
         /// <returns></returns>
-        public string Download(string fileURL)
+        public string Download(string fileURL, string filePath, string msgId = "")
         {
-            string msgId = Guid.NewGuid().ToString();
-            FileMessageInfo info = FileMessageInfo.Create(ServerHttpUrl);
+            if (string.IsNullOrWhiteSpace(msgId))
+            {
+                msgId = Guid.NewGuid().ToString();
+            }
+            FileMessageInfo info = FileMessageInfo.Create(fileURL);
             info.MessageId = msgId;
             info.ProcessType = FileProcessType.DOWNLOAD;
             info.Client.DownloadProgressChanged += webClient_DownloadProgressChanged;
-            info.Client.DownloadDataCompleted += Client_DownloadDataCompleted;
-            info.Client.DownloadDataAsync(new Uri(fileURL), info);
+            info.Client.DownloadFileCompleted += Client_DownloadFileCompleted;
+            info.Client.DownloadFileAsync(new Uri(fileURL), filePath, info);
+            //info.Client.DownloadDataAsync(new Uri(fileURL), info);
+            _fileMsgQueue.Add(info);
             return msgId;
         }
 
-        void Client_DownloadDataCompleted(object sender, DownloadDataCompletedEventArgs e)
+        void Client_DownloadFileCompleted(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
         {
-            throw new NotImplementedException();
+            var fileMsgInfo = e.UserState as FileMessageInfo;
+            if (e.Error != null)
+            {
+                fileMsgInfo.Status = 4;
+                ///
+                // contextInfo.IMRequest.Callback(contextInfo.IMRequest, new ResponseAckInfo() { Data = e.Error, MessageId = contextInfo.IMRequest.MessageId, MsgType = MessageType.Ack, Status = ResponseCode.TIMEOUT });
+
+                //传递到异常事件中去
+                OnError(sender, new ErrorEventArgs() { ExceptionInfo = e.Error, MsgId = fileMsgInfo.MessageId, ProcessType = fileMsgInfo.ProcessType });
+            }
+            else
+            {
+                fileMsgInfo.Status = 2;
+            }
+
         }
-
-
 
         void webClient_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
         {
-            var contextInfo = e.UserState as MessageContext;
-            OnDownload(contextInfo.IMRequest.MessageId, e.BytesReceived, e.TotalBytesToReceive);
+            var fileMsgInfo = e.UserState as FileMessageInfo;
+            OnDownload(fileMsgInfo.MessageId, e.BytesReceived, e.TotalBytesToReceive);
         }
 
 
