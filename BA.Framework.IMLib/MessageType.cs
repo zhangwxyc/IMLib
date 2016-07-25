@@ -15,17 +15,22 @@ namespace BA.Framework.IMLib
         Ack,
         Connect,
         Disconnect,
-
+        Ping,
         //应答消息
         //文本
         Text,
         Image,
         Voice,
         Video,
-        Link,
+        File,
         Invite,
-        Location,
-        Vcard,
+        Join,
+        Leave,
+        Transfer,
+        //Location,
+        //Vcard,
+        Link,
+        Custom,
         UnKnown
     }
 }

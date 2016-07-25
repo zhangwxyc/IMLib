@@ -220,23 +220,32 @@ namespace BA.Framework.IMLib
                 OnDisconnect();
             }
         }
-
+         
+        string _reConnectSync = string.Empty;
         /// <summary>
         /// 重连
         /// </summary>
         private void ReConnect()
         {
-            for (int index = 0; index < ConnectRetryTimes; index++)
+
+            lock (_reConnectSync)
             {
-                if (Connect(IpAddress, Port, _user.AuthenticationType, _user.Name, _user.UserAgent, _user.Token, null))
+                if (IsAvailable)
                 {
-                    if (OnReConnected != null)
-                    {
-                        OnReConnected();
-                    }
-                    break;
+                    return;
                 }
-                Thread.Sleep(ConnectRetryInnerTime);
+                for (int index = 0; index < ConnectRetryTimes; index++)
+                {
+                    if (Connect(IpAddress, Port, _user.AuthenticationType, _user.Name, _user.UserAgent, _user.Token, null))
+                    {
+                        if (OnReConnected != null)
+                        {
+                            OnReConnected();
+                        }
+                        break;
+                    }
+                    Thread.Sleep(ConnectRetryInnerTime);
+                }
             }
         }
 
@@ -281,39 +290,99 @@ namespace BA.Framework.IMLib
         private void Receive(string bufferMessage)
         {
             var baseResponseInfo = bufferMessage.ToObject<Message.BaseMessageInfo>();
+            switch (baseResponseInfo.MsgType)
+            {
+                case MessageType.Ack:
+                    ProcessMessage_ACK(bufferMessage);
+                    break;
+                //case MessageType.Connect:
+                //    break;
+                //case MessageType.Disconnect:
+                //    break;
+                case MessageType.Ping:
+                    ProcessMessage_Ping(bufferMessage);
+                    break;
+
+                case MessageType.Text:
+                case MessageType.Image:
+                case MessageType.Voice:
+                case MessageType.Video:
+                case MessageType.File:
+                case MessageType.Invite:
+                case MessageType.Join:
+                case MessageType.Leave:
+                case MessageType.Transfer:
+                case MessageType.Link:
+                case MessageType.Custom:
+                    ProcessMessage_Response(bufferMessage);
+                    break;
+                case MessageType.UnKnown:
+                    break;
+                default:
+                    break;
+            }
             if (baseResponseInfo.MsgType == MessageType.Ack)
             {
-                var requestInfo = _sendBuffer.FirstOrDefault(x => x.MessageId == baseResponseInfo.MessageId);
-                var responseAckInfo = bufferMessage.ToObject<Message.ResponseAckInfo>();
-                if (requestInfo != null && requestInfo.Callback != null)
-                {
-                    MessageContext context = new MessageContext() { IMRequest = requestInfo, IMResponse = responseAckInfo };
-                    if (IsFileMessage(requestInfo.MsgType))
-                    {//文件类型消息延迟回调
-                        ProcessFileMessage(context);
-                    }
-                    else
-                    {//非文件类消息收到ack直接回调
-                        requestInfo.Callback(requestInfo, responseAckInfo);
-                    }
-                }
+                ProcessMessage_ACK(bufferMessage);
             }
             else
             {
-                var responseInfo = bufferMessage.ToObject<Message.ResponseInfo>();
-                if (IsFileMessage(responseInfo.MsgType))
-                {
-                    //用户自己根据url下载，无需处理
-                }
-                
-                if (OnReceive != null)
-                {
-                    OnReceive(responseInfo.MsgType, responseInfo.FromId, responseInfo.GroupId, responseInfo.MessageId, responseInfo.MsgTime, responseInfo.Data);
-                }
-
+                ProcessMessage_Response(bufferMessage);
             }
         }
 
+        /// <summary>
+        /// 处理PING消息
+        /// </summary>
+        /// <param name="bufferMessage"></param>
+        private void ProcessMessage_Ping(string bufferMessage)
+        {
+            var responseInfo = bufferMessage.ToObject<Message.ResponseInfo>();
+            if (IsAvailable)
+            {
+                _lastPingTime = TimeStamp.UnixTimestampToDateTime(DateTime.Now, responseInfo.MsgTime);
+            }
+        }
+
+        /// <summary>
+        /// 处理普通的下行消息
+        /// </summary>
+        /// <param name="bufferMessage"></param>
+        private void ProcessMessage_Response(string bufferMessage)
+        {
+            var responseInfo = bufferMessage.ToObject<Message.ResponseInfo>();
+            if (IsFileMessage(responseInfo.MsgType))
+            {
+                //用户自己根据url下载，无需处理
+            }
+
+            if (OnReceive != null)
+            {
+                OnReceive(responseInfo.MsgType, responseInfo.FromId, responseInfo.GroupId, responseInfo.MessageId, responseInfo.MsgTime, responseInfo.Data);
+            }
+        }
+
+        /// <summary>
+        /// 处理ACK消息
+        /// </summary>
+        /// <param name="bufferMessage"></param>
+        private void ProcessMessage_ACK(string bufferMessage)
+        {
+            var responseAckInfo = bufferMessage.ToObject<Message.ResponseAckInfo>();
+            var requestInfo = _sendBuffer.FirstOrDefault(x => x.MessageId == responseAckInfo.MessageId);
+            if (requestInfo != null && requestInfo.Callback != null)
+            {
+                MessageContext context = new MessageContext() { IMRequest = requestInfo, IMResponse = responseAckInfo };
+                if (IsFileMessage(requestInfo.MsgType))
+                {//文件类型消息延迟回调
+                    ProcessFileMessage(context);
+                }
+                else
+                {//非文件类消息收到ack直接回调
+                    requestInfo.Callback(requestInfo, responseAckInfo);
+                }
+            }
+        }
 
         /// <summary>
         /// 是否是文件类型消息
@@ -421,12 +490,35 @@ namespace BA.Framework.IMLib
         }
 
         //image
-
+        public bool SendImage(string to, string group, string path, Action<RequestInfo, ResponseAckInfo> callback)
+        {
+            return SendFile(MessageType.Image, to, group, path, callback);
+        }
         //voice
+        public bool SendVoice(string to, string group, string path, Action<RequestInfo, ResponseAckInfo> callback)
+        {
+            return SendFile(MessageType.Voice, to, group, path, callback);
+        }
+        public bool SendVideo(string to, string group, string path, Action<RequestInfo, ResponseAckInfo> callback)
+        {
+            return SendFile(MessageType.Video, to, group, path, callback);
+        }
 
         public bool Invite(string to, string group)
         {
             return Send(MessageType.Invite, to, group, "", null);
+        }
+        public bool Transfer(string to, string group)
+        {
+            return Send(MessageType.Transfer, to, group, "", null);
+        }
+        public bool Join(string group)
+        {
+            return Send(MessageType.Join, "", group, "", null);
+        }
+        public bool Leave(string group)
+        {
+            return Send(MessageType.Leave, "", group, "", null);
         }
 
         //public string ServerHttpUrl { get; set; }
@@ -551,5 +643,15 @@ namespace BA.Framework.IMLib
         //join
         //transfer
 
+
+        public void ProcessError(string msgId, Exception ex)
+        {
+            //收到网络异常且客户端已断开时触发重连
+            if (ex is SocketException && !_client.Connected)
+            {
+                Disconnect();
+                ReConnect();
+            }
+        }
     }
 }
