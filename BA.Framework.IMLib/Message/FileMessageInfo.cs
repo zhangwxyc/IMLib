@@ -24,11 +24,11 @@ namespace BA.Framework.IMLib.Message
         /// <summary>
         /// 相关client
         /// </summary>
-        public WebClient Client { get; set; }
+        public WebClientV2 Client { get; set; }
 
         public static FileMessageInfo Create(string serverHttpUrl)
         {
-            WebClient webClient = new WebClient();
+            var webClient = new WebClientV2();
             webClient.BaseAddress = serverHttpUrl;
             webClient.Credentials = CredentialCache.DefaultCredentials;
             return new FileMessageInfo()

@@ -11,6 +11,13 @@ namespace SimpleTest
     {
         static void Main(string[] args)
         {
+           // IMTest();
+
+            ImageThumbnail.Thumbnail.MakeThumbnailByRate(@"C:\Users\Public\Pictures\Sample Pictures\1.jpg", 0.2,"C:\\","C:\\123.jpg");
+        }
+
+        private static void IMTest()
+        {
             IMServer server = new IMServer();
             bool isConnected = server.Connect("192.168.87.114", 8282, "new", "star", "pc", Guid.NewGuid().ToString(), Connected);
             server.OnReceive += server_OnReceive;

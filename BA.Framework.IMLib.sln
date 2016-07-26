@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BA.Framework.IMLib", "BA.Fr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleTest", "SimpleTest\SimpleTest.csproj", "{D78F33CB-30B4-442D-BA9C-560832241B0E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageThumbnail", "ImageThumbnail\ImageThumbnail.csproj", "{EB95D94F-B42B-4D97-B5B5-18D535127861}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{D78F33CB-30B4-442D-BA9C-560832241B0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D78F33CB-30B4-442D-BA9C-560832241B0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D78F33CB-30B4-442D-BA9C-560832241B0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB95D94F-B42B-4D97-B5B5-18D535127861}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB95D94F-B42B-4D97-B5B5-18D535127861}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB95D94F-B42B-4D97-B5B5-18D535127861}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB95D94F-B42B-4D97-B5B5-18D535127861}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

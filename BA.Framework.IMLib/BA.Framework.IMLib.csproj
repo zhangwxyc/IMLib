@@ -46,6 +46,7 @@
     <Compile Include="CommonExt.cs" />
     <Compile Include="CustomEnumJsonConverter.cs" />
     <Compile Include="ErrorEventArgs.cs" />
+    <Compile Include="ILogger.cs" />
     <Compile Include="Message\FileMessageInfo.cs" />
     <Compile Include="FileProcessType.cs" />
     <Compile Include="IIMServer.cs" />
@@ -62,6 +63,9 @@
     <Compile Include="ResponseCode.cs" />
     <Compile Include="TimeStamp.cs" />
     <Compile Include="UserIdentity.cs" />
+    <Compile Include="WebClientV2.cs">
+      <SubType>Component</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
