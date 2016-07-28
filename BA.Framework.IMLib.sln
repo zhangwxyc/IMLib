@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleTest", "SimpleTest\Si
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageThumbnail", "ImageThumbnail\ImageThumbnail.csproj", "{EB95D94F-B42B-4D97-B5B5-18D535127861}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoForCsharpIMLib", "DemoForCsharpIMLib\DemoForCsharpIMLib.csproj", "{837376E5-8E89-4813-9A97-C55EBB71E040}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkChange", "NetworkChange\NetworkChange.csproj", "{A8F5DE67-FB48-493A-B6CF-A7C4AFF288D0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +31,14 @@ Global
 		{EB95D94F-B42B-4D97-B5B5-18D535127861}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EB95D94F-B42B-4D97-B5B5-18D535127861}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EB95D94F-B42B-4D97-B5B5-18D535127861}.Release|Any CPU.Build.0 = Release|Any CPU
+		{837376E5-8E89-4813-9A97-C55EBB71E040}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{837376E5-8E89-4813-9A97-C55EBB71E040}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{837376E5-8E89-4813-9A97-C55EBB71E040}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{837376E5-8E89-4813-9A97-C55EBB71E040}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8F5DE67-FB48-493A-B6CF-A7C4AFF288D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8F5DE67-FB48-493A-B6CF-A7C4AFF288D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8F5DE67-FB48-493A-B6CF-A7C4AFF288D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8F5DE67-FB48-493A-B6CF-A7C4AFF288D0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

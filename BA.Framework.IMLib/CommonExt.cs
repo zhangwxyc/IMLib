@@ -29,6 +29,10 @@ namespace BA.Framework.IMLib
         {
             return Encoding.UTF8.GetString(content);
         }
+        public static string ToJsonString(this object contentInfo)
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(contentInfo);
+        }
         public static byte[] ToByte(this string content)
         {
             return Encoding.UTF8.GetBytes(content+"\0");

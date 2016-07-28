@@ -37,6 +37,10 @@ namespace BA.Framework.IMLib.Message
                 Status = 0
             };
         }
-    
+
+        /// <summary>
+        /// 文件本地路径
+        /// </summary>
+        public string FilePath { get; set; }
     }
 }

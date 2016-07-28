@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace BA.Framework.IMLib
 {
     /// <summary>
-    /// 实现分片上传和断点下载的webclient
+    /// 实现分片上传和断点下载的webclient(同步)
     /// </summary>
     public class WebClientV2 : WebClient
     {
@@ -50,6 +50,45 @@ namespace BA.Framework.IMLib
             return true;
         }
 
+        public event Action<object, ErrorEventArgs> OnError;
+
+        public WebClientV2()
+        {
+        }
+
+        void WebClientV2_DownloadDataCompleted(object sender, DownloadDataCompletedEventArgs e)
+        {
+            var fileMsgInfo = e.UserState as dynamic;
+            if (e.Error != null)
+            {
+                //传递到异常事件中去
+                OnError(sender, new ErrorEventArgs() { ExceptionInfo = e.Error, MsgId = fileMsgInfo.MessageId, ProcessType = fileMsgInfo.ProcessType });
+            }
+            else
+            {
+                using (FileStream sw = new FileStream(fileMsgInfo.FilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
+                {
+                    sw.Write(e.Result, 0, e.Result.Length);
+                }
+            }
+        }
+        public class DownloadState
+        {
+            public string FilePath { get; set; }
+
+        }
+        void WebClientV2_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 断点下载，需要服务端实现Custom_Range
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="saveFilePath"></param>
+        /// <param name="state"></param>
+        /// <param name="onDownload"></param>
         public void DownLoad_BreakPoint(string url, string saveFilePath, object state, Action<string, long, long> onDownload)
         {
             long currentLength = 0;
@@ -62,12 +101,17 @@ namespace BA.Framework.IMLib
             long startPosition = 0;
             long endPosition = 0;
             long totalLength = 0;
-            using (StreamWriter sw = new StreamWriter(saveFilePath, true))
+
+                    this.Headers.Add("CustomRange", string.Format("bytes={0}-", currentLength));
+
+                    //this.Headers.Add("Custom_Range",string.Format("bytes={0}-", currentLength));
+                    this.DownloadDataAsync(new Uri(url),state);
+
+            using (FileStream sw = new FileStream(saveFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
             {
                 do
                 {
-                    this.Headers["Range"] = string.Format("bytes={0}-", currentLength);
-                    byte[] currentData = this.DownloadData(url);
+
                     string contentRange = this.ResponseHeaders["Content-Range"];
 
                     //bytes 10000-19999/1157632
@@ -80,17 +124,24 @@ namespace BA.Framework.IMLib
                         startPosition = long.Parse(ranges[0]);
                         endPosition = long.Parse(ranges[1]);
                     }
+                    else
+                    {
+                        startPosition = 0;
+                        //totalLength = currentData.Length;
+                        endPosition = totalLength;
+                    }
                     if (currentLength < startPosition)
                     {
                         throw new Exception("Server Error");
                     }
-                    sw.BaseStream.Seek(startPosition, SeekOrigin.Current);
-                    sw.Write(currentData);
-                    //var args = new DownloadProgressChangedEventArgs();
-                    //args.BytesReceived = currentLength;
-                    onDownload(state.ToString(), currentLength, totalLength);
-                    //OnDownloadProgressChanged(new DownloadProgressChangedEventArgs() {      });
+                    
+                    sw.Seek(startPosition, SeekOrigin.Current);
+                   // sw.Write(currentData, 0, currentData.Length);
                     currentLength = endPosition;
+
+                    onDownload(state.ToString(), currentLength, totalLength);
+                   
+
                 } while (endPosition < totalLength);
             }
         }
