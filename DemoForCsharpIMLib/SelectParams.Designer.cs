@@ -64,6 +64,7 @@
             this.Controls.Add(this.panel_table);
             this.Name = "SelectParams";
             this.Text = "SelectParams";
+            this.Load += new System.EventHandler(this.SelectParams_Load);
             this.ResumeLayout(false);
 
         }
