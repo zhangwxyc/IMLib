@@ -17,20 +17,34 @@ namespace DemoForCsharpIMLib
             InitializeComponent();
             ParamList = paramList;
         }
-        public Dictionary<string,object> ParamList { get; set; }
+        public Dictionary<string, object> ParamList { get; set; }
         public List<object> Pararms { get; set; }
         List<TextBox> TbList = new List<TextBox>();
         private void btnOk_Click(object sender, EventArgs e)
         {
-            if (true)
+            Pararms.Clear();
+            foreach (TextBox item in TbList)
             {
-                
+                if (item.BackColor == Color.Red)
+                {
+                    if (item.Text.ToLower().Equals("null"))
+                    {
+                        Pararms.Add(null);
+                    }
+                    else
+                        Pararms.Add(ParamList[item.Tag.ToString()]);
+                }
+                else
+                {
+                        Pararms.Add(item.Text);
+                }
             }
 
         }
 
         private void SelectParams_Load(object sender, EventArgs e)
         {
+            Pararms = new List<object>();
             int rowCount = ParamList.Count;
 
 
@@ -49,7 +63,7 @@ namespace DemoForCsharpIMLib
                 var lb = new Label();
                 lb.Text = item.Key;
                 var tb = new TextBox();
-                if (item.Value.GetType().Name=="String")
+                if (item.Value.GetType().Name == "String")
                 {
                     tb.Text = item.Value.ToString();
                 }
@@ -58,6 +72,7 @@ namespace DemoForCsharpIMLib
                     tb.Text = "obj";
                     tb.BackColor = Color.Red;
                 }
+                tb.Tag = item.Key;
                 TbList.Add(tb);
                 panel_table.Controls.Add(lb);
                 panel_table.Controls.Add(tb);
