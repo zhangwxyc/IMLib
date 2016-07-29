@@ -19,7 +19,7 @@ namespace SimpleTest
         private static void IMTest()
         {
             IMServer server = new IMServer();
-            bool isConnected = server.Connect("192.168.87.114", 8282, "new", "star", "pc", Guid.NewGuid().ToString(), Connected);
+            bool isConnected = server.Connect("192.168.87.114", 8282, "new", "star", "pc", Guid.NewGuid().ToString(),1, Connected);
             server.OnReceive += server_OnReceive;
             server.OnUpload += server_OnUpload;
             server.OnError += server_OnError;

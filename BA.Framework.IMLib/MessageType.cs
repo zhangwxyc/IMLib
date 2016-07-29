@@ -26,6 +26,7 @@ namespace BA.Framework.IMLib
         Invite,
         Join,
         Leave,
+        undo,
         Transfer,
         //Location,
         //Vcard,

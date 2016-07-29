@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace BA.Framework.IMLib
 {
-    public class IMServer : IIMServer
+    public class IMServer : BA.Framework.IMLib.IIMServer
     {
         /// <summary>
         /// 接收用户消息事件
@@ -24,10 +24,16 @@ namespace BA.Framework.IMLib
         public event Action<object, ErrorEventArgs> OnError;
         public event Action OnDisconnect;
         public event Action OnReConnected;
+        /// <summary>
+        /// 操作类型,日志
+        /// </summary>
+        public event Action<string, string> OnLog;
 
         private Socket m_Client;
 
         private DateTime m_LastPingTime;
+
+        private int m_LastRecServerTime = 0;
 
         private ILogger _logger;
 
@@ -131,18 +137,19 @@ namespace BA.Framework.IMLib
         /// <param name="accessToken"></param>
         /// <param name="callback"></param>
         /// <returns></returns>
-        public bool Connect(string host, int port, string userType, string userName, string userAgent, string accessToken, Action<RequestInfo, ResponseAckInfo> callback)
+        public bool Connect(string host, int port, string userType, string userName, string userAgent, string accessToken, int lastTick, Action<RequestInfo, ResponseAckInfo> callback)
         {
             var requestInfo = new Message.RequestInfo()
             {
                 MsgType = MessageType.Connect,
-                MessageId = TimeStamp.Create(),
+                //MessageId = TimeStamp.Create(),
                 Data = new
                 {
                     userType = userType,
                     userName = userName,
                     userAgent = userAgent,
-                    accessToken = accessToken
+                    accessToken = accessToken,
+                    lastTick = lastTick
                 }
                 // ,Callback = callback
             };
@@ -163,16 +170,18 @@ namespace BA.Framework.IMLib
                 m_Client = new Socket(SocketType.Stream, ProtocolType.Tcp);
 
                 m_Client.Connect(host, port);
-                m_IpAddress = m_IpAddress;
+                m_IpAddress = host;
                 m_Port = port;
                 if (m_Client.Connected)
                 {
                     byte[] sendData = requestInfo.ToByte<Message.RequestInfo>();
                     m_Client.Send(sendData);
+                    LogOpInfo("BeginConnect:", requestInfo.ToJsonString());
                     byte[] bufferData = new byte[BufferSize];
                     int receiveLen = m_Client.Receive(bufferData);
                     byte[] receivedData = bufferData.ToList().GetRange(0, receiveLen).ToArray();
                     var responseInfo = receivedData.ToObject<Message.ResponseAckInfo>();
+                    LogOpInfo("ConnectOver:", responseInfo.ToJsonString());
                     if (responseInfo.Status == ResponseCode.OK)
                     {
                         m_User.IsAuthenticated = true;
@@ -200,7 +209,6 @@ namespace BA.Framework.IMLib
             catch (Exception ex)
             {
                 LogInfo("ConnectError", ex);
-
                 RunUserCallback(callback, requestInfo, new ResponseAckInfo() { MsgType = MessageType.Ack, Status = ResponseCode.CLINET_ERR, Data = ex });
             }
 
@@ -227,7 +235,7 @@ namespace BA.Framework.IMLib
                 }
                 catch (SocketException ex)
                 {
-                    Disconnect();
+                    ProcessError("", ex);
                     LogInfo("接收网络异常", ex);
                 }
                 catch (Exception ex)
@@ -309,7 +317,7 @@ namespace BA.Framework.IMLib
                 }
                 for (int index = 0; index < ConnectRetryTimes; index++)
                 {
-                    if (Connect(m_IpAddress, m_Port, m_User.AuthenticationType, m_User.Name, m_User.UserAgent, m_User.Token, null))
+                    if (Connect(m_IpAddress, m_Port, m_User.AuthenticationType, m_User.Name, m_User.UserAgent, m_User.Token, m_LastRecServerTime, null))
                     {
                         if (OnReConnected != null)
                         {
@@ -331,7 +339,7 @@ namespace BA.Framework.IMLib
             var requestInfo = new Message.RequestInfo()
             {
                 MsgType = type,
-                MessageId = TimeStamp.Create(),
+                //MessageId = TimeStamp.Create(),
                 ToId = to,
                 GroupId = group,
                 Data = data,
@@ -354,20 +362,32 @@ namespace BA.Framework.IMLib
 
                 m_Client.BeginSend(sendData, 0, sendData.Length, SocketFlags.None, null, m_Client);
 
+                LogOpInfo("Send", requestInfo.ToJsonString());
+
                 return true;
             }
             catch (Exception ex)
             {
+                ProcessError(requestInfo.MessageId, ex);
                 RunUserCallback(callback, requestInfo, new ResponseAckInfo() { MessageId = requestInfo.MessageId, MsgType = MessageType.Ack, Status = ResponseCode.TIMEOUT });
                 return false;
             }
         }
 
+        private void LogOpInfo(string opType, string log)
+        {
+            if (OnLog != null)
+            {
+                OnLog(opType, log);
+            }
+        }
+
+        [Debug]
         public bool SendText(string to, string group, string content, Action<RequestInfo, ResponseAckInfo> callback)
         {
             return Send(MessageType.Text, to, group, new { content = content }, callback);
         }
-
+        [Debug]
         public bool SendFile(MessageType type, string to, string group, string path, Action<RequestInfo, ResponseAckInfo> callback)
         {
             if (!File.Exists(path))
@@ -386,43 +406,58 @@ namespace BA.Framework.IMLib
             }, callback);
         }
 
-        //image
+        //image 
+        [Debug]
         public bool SendImage(string to, string group, string path, Action<RequestInfo, ResponseAckInfo> callback)
         {
             return SendFile(MessageType.Image, to, group, path, callback);
         }
         //voice
+        //image 
+        [Debug]
         public bool SendVoice(string to, string group, string path, Action<RequestInfo, ResponseAckInfo> callback)
         {
             return SendFile(MessageType.Voice, to, group, path, callback);
         }
+
+        [Debug]
         public bool SendVideo(string to, string group, string path, Action<RequestInfo, ResponseAckInfo> callback)
         {
             return SendFile(MessageType.Video, to, group, path, callback);
         }
-
+        [Debug]
         public bool Invite(string to, string group, Action<RequestInfo, ResponseAckInfo> callback)
         {
             return Send(MessageType.Invite, to, group, "", callback);
         }
+        [Debug]
         public bool Transfer(string to, string group, Action<RequestInfo, ResponseAckInfo> callback)
         {
             return Send(MessageType.Transfer, to, group, "", callback);
         }
+        [Debug]
         public bool Join(string group, Action<RequestInfo, ResponseAckInfo> callback)
         {
             return Send(MessageType.Join, "", group, "", callback);
         }
+        [Debug]
         public bool Leave(string group)
         {
             return Send(MessageType.Leave, "", group, "", null);
         }
 
+        [Debug]
+        public bool Undo(string to, string group, string msg_id)
+        {
+            return Send(MessageType.undo, to, group, new { msg_id = msg_id }, null);
+        }
         #endregion
 
         #region 接收
         private void Receive(string bufferMessage)
         {
+            LogOpInfo("Receive", bufferMessage);
+
             var baseResponseInfo = bufferMessage.ToObject<Message.BaseMessageInfo>();
             switch (baseResponseInfo.MsgType)
             {
@@ -556,42 +591,58 @@ namespace BA.Framework.IMLib
 
         #region 上传相关
         /// <summary>
-        /// 上传或重传
+        /// 上传或重传,不支持100MB以上文件
         /// </summary>
         /// <param name="msg_id"></param>
         /// <param name="upload_url"></param>
         /// <param name="path"></param>
         /// <returns></returns>
+        [Debug]
         public bool Upload(string msg_id, string upload_url, string path)
         {
             FileMessageInfo info = FileMessageInfo.Create(upload_url);
             info.MessageId = msg_id;
             info.ProcessType = FileProcessType.UPLOAD;
-            int leftLength = (int)GetUploadStartPos(upload_url);
-            byte[] fileData = File.ReadAllBytes(path).Skip(leftLength).ToArray();
-
-
+            info.Client.UploadProgressChanged += UploadProgressChanged;
+            info.Client.UploadDataCompleted += UploadDataCompleted;
+            info.Status = 1;
+            info.FilePath = path;
+            m_FileMsgQueue.Add(info);
 
             var createBytes = new CreateBytes();
             string contentType = createBytes.ContentType;
             info.Client.Headers.Add("Content-Type", contentType);
-            ArrayList bytesArray = new ArrayList();
-            bytesArray.Add(createBytes.CreateFieldData("file", Path.GetFileName(path)
-                                                , "application/octet-stream", fileData));
-            byte[] postData = createBytes.JoinBytes(bytesArray);
 
-            info.Client.UploadProgressChanged += UploadProgressChanged;
-            info.Client.UploadDataCompleted += UploadDataCompleted;
-            info.Client.UploadDataAsync(new Uri(upload_url), "POST", postData, info);
-            info.Status = 1;
-            m_FileMsgQueue.Add(info);
+            new TaskFactory().StartNew(() =>
+            {
+                try
+                {
+                    int leftLength = (int)GetUploadStartPos(upload_url);
+                    byte[] fileData = File.ReadAllBytes(path).Skip(leftLength).ToArray();
+
+                    ArrayList bytesArray = new ArrayList();
+                    bytesArray.Add(createBytes.CreateFieldData("file", Path.GetFileName(path)
+                                                        , "application/octet-stream", fileData));
+                    byte[] postData = createBytes.JoinBytes(bytesArray);
+                    info.Client.UploadDataAsync(new Uri(upload_url), "POST", postData, info);
+                }
+                catch (Exception ex)
+                {
+                    ProcessError(msg_id, ex);
+                }
+            });
+
             return true;
         }
 
         void UploadProgressChanged(object sender, UploadProgressChangedEventArgs e)
         {
             var info = e.UserState as FileMessageInfo;
-            OnUpload(info.MessageId, e.BytesSent, e.TotalBytesToSend);
+            if (e.BytesSent != e.TotalBytesToSend)
+            {
+                OnUpload(info.MessageId, e.BytesSent, e.TotalBytesToSend);
+            }
+            //发送完成触发多次
         }
 
         void UploadDataCompleted(object sender, UploadDataCompletedEventArgs e)
@@ -603,11 +654,14 @@ namespace BA.Framework.IMLib
                 // contextInfo.IMRequest.Callback(contextInfo.IMRequest, new ResponseAckInfo() { Data = e.Error, MessageId = contextInfo.IMRequest.MessageId, MsgType = MessageType.Ack, Status = ResponseCode.TIMEOUT });
 
                 //暂时不传递到异常事件中去
-                OnError(sender, new ErrorEventArgs() { ExceptionInfo = e.Error, MsgId = fileMsgInfo.MessageId, ProcessType = fileMsgInfo.ProcessType });
+                //OnError(sender, new ErrorEventArgs() { ExceptionInfo = e.Error, MsgId = fileMsgInfo.MessageId, ProcessType = fileMsgInfo.ProcessType });
+                ProcessError(fileMsgInfo.MessageId, e.Error);
             }
             else
             {
                 fileMsgInfo.Status = 2;
+                FileInfo info = new FileInfo(fileMsgInfo.FilePath);
+                OnUpload(fileMsgInfo.MessageId, info.Length, info.Length);
                 //  contextInfo.IMRequest.Callback(contextInfo.IMRequest, contextInfo.IMResponse);
             }
         }
@@ -624,7 +678,7 @@ namespace BA.Framework.IMLib
             {
                 var req = (HttpWebRequest)WebRequest.CreateDefault(new Uri(url));
                 req.Method = "HEAD";
-                req.Timeout = 5000;
+                req.Timeout = 50;
 
                 var res = (HttpWebResponse)req.GetResponse();
                 if (res.StatusCode == HttpStatusCode.OK)
@@ -647,6 +701,7 @@ namespace BA.Framework.IMLib
 
         #region 下载
 
+        [Debug]
         /// <summary>
         /// 异步下载（非断点），返回下载标示，用来获取下载进度或异常
         /// </summary>
@@ -661,9 +716,21 @@ namespace BA.Framework.IMLib
             FileMessageInfo info = FileMessageInfo.Create(fileURL);
             info.MessageId = msgId;
             info.ProcessType = FileProcessType.DOWNLOAD;
+            info.FilePath = filePath;
+            info.Status = 1;
             info.Client.DownloadProgressChanged += webClient_DownloadProgressChanged;
             info.Client.DownloadFileCompleted += Client_DownloadFileCompleted;
-            info.Client.DownloadFileAsync(new Uri(fileURL), filePath, info);
+            new TaskFactory().StartNew(() =>
+            {
+                try
+                {
+                    info.Client.DownloadFileAsync(new Uri(fileURL), filePath, info);
+                }
+                catch (Exception ex)
+                {
+                    ProcessError(msgId, ex);
+                }
+            });
             m_FileMsgQueue.Add(info);
             return msgId;
         }
@@ -677,19 +744,26 @@ namespace BA.Framework.IMLib
                 // contextInfo.IMRequest.Callback(contextInfo.IMRequest, new ResponseAckInfo() { Data = e.Error, MessageId = contextInfo.IMRequest.MessageId, MsgType = MessageType.Ack, Status = ResponseCode.TIMEOUT });
 
                 //传递到异常事件中去
-                OnError(sender, new ErrorEventArgs() { ExceptionInfo = e.Error, MsgId = fileMsgInfo.MessageId, ProcessType = fileMsgInfo.ProcessType });
+               // OnError(sender, new ErrorEventArgs() { ExceptionInfo = e.Error, MsgId = fileMsgInfo.MessageId, ProcessType = fileMsgInfo.ProcessType });
+                ProcessError(fileMsgInfo.MessageId, e.Error);
             }
             else
             {
                 fileMsgInfo.Status = 2;
+                FileInfo info = new FileInfo(fileMsgInfo.FilePath);
+                OnDownload(fileMsgInfo.MessageId, info.Length, info.Length);
             }
         }
 
         void webClient_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
         {
             var fileMsgInfo = e.UserState as FileMessageInfo;
-            OnDownload(fileMsgInfo.MessageId, e.BytesReceived, e.TotalBytesToReceive);
+            if (e.BytesReceived != e.TotalBytesToReceive)
+            {
+                OnDownload(fileMsgInfo.MessageId, e.BytesReceived, e.TotalBytesToReceive);
+            }
         }
+
 
         /// <summary>
         /// 断点下载，需服务器支持CustomRange
@@ -715,11 +789,14 @@ namespace BA.Framework.IMLib
             info.MessageId = msgId;
             info.FilePath = filePath;
             info.ProcessType = FileProcessType.DOWNLOAD;
-            m_FileMsgQueue.Add(info);
             info.Status = 1;
-            info.Client.DownloadDataAsync(new Uri(fileURL), info);
+            m_FileMsgQueue.Add(info);
             info.Client.DownloadDataCompleted += Client_DownloadDataCompleted;
             info.Client.DownloadProgressChanged += webClient_DownloadProgressChanged;
+            new TaskFactory().StartNew(() =>
+            {
+                info.Client.DownloadDataAsync(new Uri(fileURL), info);
+            });
             return msgId;
         }
 
@@ -729,7 +806,8 @@ namespace BA.Framework.IMLib
             if (e.Error != null)
             {
                 //传递到异常事件中去
-                OnError(sender, new ErrorEventArgs() { ExceptionInfo = e.Error, MsgId = fileMsgInfo.MessageId, ProcessType = fileMsgInfo.ProcessType });
+                ProcessError(fileMsgInfo.MessageId, e.Error);
+                //OnError(sender, new ErrorEventArgs() { ExceptionInfo = e.Error, MsgId = fileMsgInfo.MessageId, ProcessType = fileMsgInfo.ProcessType });
             }
             else
             {
@@ -747,12 +825,14 @@ namespace BA.Framework.IMLib
                         sw.Write(e.Result, 0, e.Result.Length);
                     }
                 }
+                OnDownload(fileMsgInfo.MessageId, e.Result.Length, e.Result.Length);
             }
         }
 
         #endregion
 
         #region 取消
+        [Debug]
         /// <summary>
         /// 根据消息ID取消上传或下载的任务
         /// </summary>
@@ -804,6 +884,7 @@ namespace BA.Framework.IMLib
                 try
                 {
                     callback(requestInfo, responseInfo);
+                    //LogOpInfo("RunUserCallback:", responseInfo.ToJsonString());
                 }
                 catch (Exception ex)
                 {
@@ -833,6 +914,10 @@ namespace BA.Framework.IMLib
         /// <param name="ex"></param>
         private void ProcessError(string msgId, Exception ex)
         {
+            if (OnError!=null)
+            {
+                OnError(this, new ErrorEventArgs() { MsgId = msgId, ExceptionInfo = ex });
+            }
             //收到网络异常且客户端已断开时触发重连
             if (ex is SocketException && !m_Client.Connected)
             {

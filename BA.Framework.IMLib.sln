@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoForCsharpIMLib", "DemoF
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkChange", "NetworkChange\NetworkChange.csproj", "{A8F5DE67-FB48-493A-B6CF-A7C4AFF288D0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataReaderAnysle", "DataReaderAnysle\DataReaderAnysle.csproj", "{AC06E3E8-99F1-42A3-AA4C-CDCC87D9F09E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{A8F5DE67-FB48-493A-B6CF-A7C4AFF288D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A8F5DE67-FB48-493A-B6CF-A7C4AFF288D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A8F5DE67-FB48-493A-B6CF-A7C4AFF288D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC06E3E8-99F1-42A3-AA4C-CDCC87D9F09E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC06E3E8-99F1-42A3-AA4C-CDCC87D9F09E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC06E3E8-99F1-42A3-AA4C-CDCC87D9F09E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC06E3E8-99F1-42A3-AA4C-CDCC87D9F09E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

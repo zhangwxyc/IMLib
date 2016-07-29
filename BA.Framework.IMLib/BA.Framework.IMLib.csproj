@@ -47,11 +47,15 @@
     <Compile Include="CreateBytes.cs" />
     <Compile Include="CustomEnumJsonConverter.cs" />
     <Compile Include="ErrorEventArgs.cs" />
+    <Compile Include="DebugAttribute.cs" />
+    <Compile Include="IIMServer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IIMServer2.cs" />
     <Compile Include="ILogger.cs" />
     <Compile Include="IWebClient.cs" />
     <Compile Include="Message\FileMessageInfo.cs" />
     <Compile Include="FileProcessType.cs" />
-    <Compile Include="IIMServer.cs" />
     <Compile Include="IMEventArgs.cs" />
     <Compile Include="IMServer.cs" />
     <Compile Include="MessageType.cs" />
