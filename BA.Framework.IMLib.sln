@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkChange", "NetworkCha
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataReaderAnysle", "DataReaderAnysle\DataReaderAnysle.csproj", "{AC06E3E8-99F1-42A3-AA4C-CDCC87D9F09E}"
 EndProject
+Project("{7CF6DF6D-3B04-46F8-A40B-537D21BCA0B4}") = "SDK_DOC", "SDK_DOC\SDK_DOC.shfbproj", "{E2AD2EED-F530-4356-BDD6-E9A9B8F5409E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{AC06E3E8-99F1-42A3-AA4C-CDCC87D9F09E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AC06E3E8-99F1-42A3-AA4C-CDCC87D9F09E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AC06E3E8-99F1-42A3-AA4C-CDCC87D9F09E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2AD2EED-F530-4356-BDD6-E9A9B8F5409E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2AD2EED-F530-4356-BDD6-E9A9B8F5409E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2AD2EED-F530-4356-BDD6-E9A9B8F5409E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2AD2EED-F530-4356-BDD6-E9A9B8F5409E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

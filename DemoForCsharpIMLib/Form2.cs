@@ -129,7 +129,7 @@ namespace DemoForCsharpIMLib
         }
         public void Connected(RequestInfo rqInfo, ResponseAckInfo ackInfo)
         {
-            //Log(string.Format("client:{0}\r\nserver:{1}", rqInfo.ToJsonString(), ackInfo.ToJsonString()));
+           // Log(string.Format("CallBack:{0}",  ackInfo.ToJsonString()));
         }
 
         void btn_Click(object sender, EventArgs e)
@@ -192,6 +192,7 @@ namespace DemoForCsharpIMLib
         {
             m_server.SendText(tb_ToUser.Text, tb_group.Text, tb_Txt.Text, (rqInfo, ackInfo) =>
             {
+                Log(string.Format("CallBack:{0}", ackInfo.ToJsonString()));
                // Log(string.Format("client:{0}\r\nserver:{1}", rqInfo.ToJsonString(), ackInfo.ToJsonString()));
             });
         }

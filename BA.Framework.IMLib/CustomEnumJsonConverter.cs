@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace BA.Framework.IMLib
 {
-    public class CustomEnumJsonConverter : JsonConverter
+    internal class CustomEnumJsonConverter : JsonConverter
     {
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {

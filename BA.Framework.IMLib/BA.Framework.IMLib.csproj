@@ -20,6 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\BA.Framework.IMLib.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -51,7 +52,6 @@
     <Compile Include="IIMServer.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="IIMServer2.cs" />
     <Compile Include="ILogger.cs" />
     <Compile Include="IWebClient.cs" />
     <Compile Include="Message\FileMessageInfo.cs" />
@@ -74,8 +74,6 @@
     <Compile Include="WebClientV2.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="WebClientV3.cs" />
-    <Compile Include="WebClient_SyncBreakPoint.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

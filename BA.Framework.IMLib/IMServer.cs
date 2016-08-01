@@ -264,6 +264,7 @@ namespace BA.Framework.IMLib
                                 Receive(bufferMessages[index]);
                             }
                         }
+                        Thread.Sleep(1000);
                     }
                 }
                 catch (Exception ex)
@@ -309,7 +310,7 @@ namespace BA.Framework.IMLib
         /// </summary>
         private void ReConnect()
         {
-
+            LogOpInfo("开始重连", "..");
             lock (_reConnectSync)
             {
                 if (IsAvailable)
@@ -320,13 +321,21 @@ namespace BA.Framework.IMLib
                 {
                     if (Connect(m_IpAddress, m_Port, m_User.AuthenticationType, m_User.Name, m_User.UserAgent, m_User.Token, m_LastRecServerTime, null))
                     {
+
                         if (OnReConnected != null)
                         {
                             OnReConnected();
                         }
+                       
+                        LogOpInfo(string.Format("第{0}次开始重连成功", index + 1), "==");
+
                         break;
                     }
-                    Thread.Sleep(ConnectRetryInnerTime);
+                    else
+                    {
+                        LogOpInfo(string.Format("第{0}次开始重连失败", index + 1), "..");
+                    }
+                    Thread.Sleep(ConnectRetryInnerTime * 1000);
                 }
             }
         }
@@ -346,6 +355,8 @@ namespace BA.Framework.IMLib
                 Data = data,
                 Callback = callback
             };
+
+            LogOpInfo("Send", requestInfo.ToJsonString());
 
             //连接不可用
             if (!IsAvailable)
@@ -369,8 +380,6 @@ namespace BA.Framework.IMLib
                 m_SendBuffer.Add(requestInfo);
 
                 m_Client.BeginSend(sendData, 0, sendData.Length, SocketFlags.None, null, m_Client);
-
-                LogOpInfo("Send", requestInfo.ToJsonString());
 
                 return true;
             }

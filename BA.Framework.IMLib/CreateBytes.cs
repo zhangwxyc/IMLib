@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BA.Framework.IMLib
 {
-    public class CreateBytes
+    internal class CreateBytes
     {
         Encoding encoding = Encoding.UTF8;
 

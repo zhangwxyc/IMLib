@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BA.Framework.IMLib
 {
-    public class TimeStamp
+    internal class TimeStamp
     {
         public static string Create()
         {
