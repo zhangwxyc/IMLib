@@ -64,11 +64,13 @@
     <Compile Include="Message\RequestInfo.cs" />
     <Compile Include="Message\ResponseAckInfo.cs" />
     <Compile Include="Message\ResponseInfo.cs" />
+    <Compile Include="Permission.cs" />
     <Compile Include="ProcessFileStatus.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResponseCode.cs" />
     <Compile Include="TimeStamp.cs" />
     <Compile Include="UserIdentity.cs" />
+    <Compile Include="UserPermission.cs" />
     <Compile Include="WebClientV2.cs">
       <SubType>Component</SubType>
     </Compile>

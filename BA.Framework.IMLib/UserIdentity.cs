@@ -20,5 +20,7 @@ namespace BA.Framework.IMLib
 
         public string Name { get; set; }
 
+        public List<UserPermission> PermissionList { get; set; }
+
     }
 }

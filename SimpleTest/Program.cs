@@ -11,8 +11,8 @@ namespace SimpleTest
     {
         static void Main(string[] args)
         {
-            IMTest();
-
+           // IMTest();
+           List<UserPermission> list= BA.Framework.IMLib.Permission.GetUserPermission("3");
             //ImageThumbnail.Thumbnail.MakeThumbnailByRate(@"C:\Users\Public\Pictures\Sample Pictures\1.jpg", 0.2,"C:\\","C:\\123.jpg");
         }
 

@@ -189,7 +189,8 @@ namespace BA.Framework.IMLib
                         m_User.Token = accessToken;
                         m_User.UserAgent = userAgent;
                         m_User.UserType = userType;
-
+                        m_User.AuthenticationType = responseInfo.Data.userPermission;
+                        m_User.PermissionList = Permission.GetUserPermission(m_User.AuthenticationType);
                         //连接使用同步
                         // _sendBuffer.Add(requestInfo);
                         m_LastPingTime = DateTime.Now;
@@ -350,6 +351,13 @@ namespace BA.Framework.IMLib
             if (!IsAvailable)
             {
                 RunUserCallback(callback, requestInfo, new ResponseAckInfo() { MessageId = requestInfo.MessageId, MsgType = MessageType.Ack, Status = ResponseCode.NO_AUTH });
+
+                return false;
+            }
+
+            if (!Permission.CheckPermission(m_User, type))
+            {
+                RunUserCallback(callback, requestInfo, new ResponseAckInfo() { MessageId = requestInfo.MessageId, MsgType = MessageType.Ack, Status = ResponseCode.NO_PERMISSION });
 
                 return false;
             }
@@ -744,7 +752,7 @@ namespace BA.Framework.IMLib
                 // contextInfo.IMRequest.Callback(contextInfo.IMRequest, new ResponseAckInfo() { Data = e.Error, MessageId = contextInfo.IMRequest.MessageId, MsgType = MessageType.Ack, Status = ResponseCode.TIMEOUT });
 
                 //传递到异常事件中去
-               // OnError(sender, new ErrorEventArgs() { ExceptionInfo = e.Error, MsgId = fileMsgInfo.MessageId, ProcessType = fileMsgInfo.ProcessType });
+                // OnError(sender, new ErrorEventArgs() { ExceptionInfo = e.Error, MsgId = fileMsgInfo.MessageId, ProcessType = fileMsgInfo.ProcessType });
                 ProcessError(fileMsgInfo.MessageId, e.Error);
             }
             else
@@ -914,7 +922,7 @@ namespace BA.Framework.IMLib
         /// <param name="ex"></param>
         private void ProcessError(string msgId, Exception ex)
         {
-            if (OnError!=null)
+            if (OnError != null)
             {
                 OnError(this, new ErrorEventArgs() { MsgId = msgId, ExceptionInfo = ex });
             }
