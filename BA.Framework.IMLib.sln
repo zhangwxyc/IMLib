@@ -17,6 +17,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataReaderAnysle", "DataRea
 EndProject
 Project("{7CF6DF6D-3B04-46F8-A40B-537D21BCA0B4}") = "SDK_DOC", "SDK_DOC\SDK_DOC.shfbproj", "{E2AD2EED-F530-4356-BDD6-E9A9B8F5409E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebDemo", "WebDemo\WebDemo.csproj", "{EEF05DF9-1B55-4144-8996-147F4BD38520}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoTest", "DemoTest\DemoTest.csproj", "{3BFB4F7E-A36A-49EC-9AF1-3DD19B145251}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +55,14 @@ Global
 		{E2AD2EED-F530-4356-BDD6-E9A9B8F5409E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E2AD2EED-F530-4356-BDD6-E9A9B8F5409E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E2AD2EED-F530-4356-BDD6-E9A9B8F5409E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EEF05DF9-1B55-4144-8996-147F4BD38520}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EEF05DF9-1B55-4144-8996-147F4BD38520}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EEF05DF9-1B55-4144-8996-147F4BD38520}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EEF05DF9-1B55-4144-8996-147F4BD38520}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3BFB4F7E-A36A-49EC-9AF1-3DD19B145251}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BFB4F7E-A36A-49EC-9AF1-3DD19B145251}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BFB4F7E-A36A-49EC-9AF1-3DD19B145251}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BFB4F7E-A36A-49EC-9AF1-3DD19B145251}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

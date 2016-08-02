@@ -175,7 +175,7 @@ namespace BA.Framework.IMLib
                 }
                 // ,Callback = callback
             };
-
+            
             if (IsAvailable)
             {
                 //已经连接成功

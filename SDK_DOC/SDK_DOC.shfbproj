@@ -40,6 +40,33 @@
     <NamingMethod>Guid</NamingMethod>
     <HelpTitle>IM_SDK%28C#%29</HelpTitle>
     <ContentPlacement>AboveNamespaces</ContentPlacement>
+    <VisibleItems>Protected, ProtectedInternalAsProtected</VisibleItems>
+    <ApiFilter>
+      <Filter entryType="Namespace" fullName="BA.Framework.IMLib" isExposed="False" xmlns="">
+  <Filter entryType="Class" fullName="BA.Framework.IMLib.ErrorEventArgs" filterName="ErrorEventArgs" isExposed="False">
+    <Filter entryType="Property" fullName="BA.Framework.IMLib.ErrorEventArgs.ExceptionInfo" filterName="ExceptionInfo" isExposed="True" />
+    <Filter entryType="Property" fullName="BA.Framework.IMLib.ErrorEventArgs.MsgId" filterName="MsgId" isExposed="True" />
+  </Filter>
+  <Filter entryType="Enumeration" fullName="BA.Framework.IMLib.FileProcessType" filterName="FileProcessType" isExposed="True" />
+  <Filter entryType="Class" fullName="BA.Framework.IMLib.IMServer" filterName="IMServer" isExposed="True">
+    <Filter entryType="Property" fullName="BA.Framework.IMLib.IMServer.Log" filterName="Log" isExposed="False" />
+  </Filter>
+  <Filter entryType="Interface" fullName="BA.Framework.IMLib.IWebClient" filterName="IWebClient" isExposed="True" />
+  <Filter entryType="Enumeration" fullName="BA.Framework.IMLib.MessageType" filterName="MessageType" isExposed="True" />
+  <Filter entryType="Enumeration" fullName="BA.Framework.IMLib.ResponseCode" filterName="ResponseCode" isExposed="True" />
+</Filter>
+<Filter entryType="Namespace" fullName="BA.Framework.IMLib.Message" isExposed="False" xmlns="">
+  <Filter entryType="Class" fullName="BA.Framework.IMLib.Message.BaseMessageInfo" filterName="BaseMessageInfo" isExposed="True">
+    <Filter entryType="Property" fullName="BA.Framework.IMLib.Message.BaseMessageInfo.RelateFileInfo" filterName="RelateFileInfo" isExposed="False" />
+  </Filter>
+  <Filter entryType="Class" fullName="BA.Framework.IMLib.Message.RequestInfo" filterName="RequestInfo" isExposed="False">
+    <Filter entryType="Property" fullName="BA.Framework.IMLib.Message.RequestInfo.GroupId" filterName="GroupId" isExposed="True" />
+    <Filter entryType="Property" fullName="BA.Framework.IMLib.Message.RequestInfo.ToId" filterName="ToId" isExposed="True" />
+  </Filter>
+  <Filter entryType="Class" fullName="BA.Framework.IMLib.Message.ResponseAckInfo" filterName="ResponseAckInfo" isExposed="False">
+    <Filter entryType="Property" fullName="BA.Framework.IMLib.Message.ResponseAckInfo.Status" filterName="Status" isExposed="True" />
+  </Filter>
+</Filter></ApiFilter>
   </PropertyGroup>
   <!-- There are no properties for these groups.  AnyCPU needs to appear in order for Visual Studio to perform
 			 the build.  The others are optional common platform types that may appear. -->
@@ -61,13 +88,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="Content" />
-    <Folder Include="Content\VersionHistory" />
     <Folder Include="icons" />
     <Folder Include="Media" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Content\VersionHistory\v1.0.0.0.aml" />
-    <None Include="Content\VersionHistory\VersionHistory.aml" />
     <None Include="Content\Welcome.aml" />
   </ItemGroup>
   <ItemGroup>
