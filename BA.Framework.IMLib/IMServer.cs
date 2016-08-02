@@ -13,16 +13,34 @@ using System.Threading.Tasks;
 
 namespace BA.Framework.IMLib
 {
+    /// <summary>
+    /// 访问IM服务器的主要类
+    /// </summary>
     public class IMServer : BA.Framework.IMLib.IIMServer
     {
         /// <summary>
         /// 接收用户消息事件
         /// </summary>
         public event Action<MessageType, string, string, string, int, object> OnReceive;
+        /// <summary>
+        /// 上传文件事件
+        /// </summary>
         public event Action<string, long, long> OnUpload;
+        /// <summary>
+        /// 下载文件事件
+        /// </summary>
         public event Action<string, long, long> OnDownload;
+        /// <summary>
+        /// 异常事件
+        /// </summary>
         public event Action<object, ErrorEventArgs> OnError;
+        /// <summary>
+        /// 断开连接事触发此事件
+        /// </summary>
         public event Action OnDisconnect;
+        /// <summary>
+        /// 重新连接成功时触发此事件
+        /// </summary>
         public event Action OnReConnected;
         /// <summary>
         /// 操作类型,日志
@@ -56,7 +74,7 @@ namespace BA.Framework.IMLib
         /// <summary>
         /// 当前连接是否可用
         /// </summary>
-        public bool IsAvailable
+        bool IsAvailable
         {
             get
             {
@@ -114,7 +132,9 @@ namespace BA.Framework.IMLib
             set { _connectRetryTimes = value; }
         }
 
-
+        /// <summary>
+        /// ctr
+        /// </summary>
         public IMServer()
         {
             m_User = new UserIdentity();
@@ -126,17 +146,19 @@ namespace BA.Framework.IMLib
 
 
         #region 连接
+
         /// <summary>
         /// 打开连接
         /// </summary>
-        /// <param name="host"></param>
-        /// <param name="port"></param>
-        /// <param name="userType"></param>
-        /// <param name="userName"></param>
-        /// <param name="userAgent"></param>
-        /// <param name="accessToken"></param>
-        /// <param name="callback"></param>
-        /// <returns></returns>
+        /// <param name="host">服务器地址</param>
+        /// <param name="port">服务器端口号</param>
+        /// <param name="userType">用户类型</param>
+        /// <param name="userName">用户显示的名称</param>
+        /// <param name="userAgent">用户登陆的终端信息</param>
+        /// <param name="accessToken">访问令牌</param>
+        /// <param name="lastTick">收到最后一条消息的UNIX时间戳</param>
+        /// <param name="callback">回调函数</param>
+        /// <returns>连接是否成功</returns>
         public bool Connect(string host, int port, string userType, string userName, string userAgent, string accessToken, int lastTick, Action<RequestInfo, ResponseAckInfo> callback)
         {
             var requestInfo = new Message.RequestInfo()
@@ -326,7 +348,7 @@ namespace BA.Framework.IMLib
                         {
                             OnReConnected();
                         }
-                       
+
                         LogOpInfo(string.Format("第{0}次开始重连成功", index + 1), "==");
 
                         break;
@@ -344,6 +366,15 @@ namespace BA.Framework.IMLib
 
         #region 发送
 
+        /// <summary>
+        /// 发送消息
+        /// </summary>
+        /// <param name="type">消息类型，参见枚举MessageType</param>
+        /// <param name="to">要接收消息的用户</param>
+        /// <param name="group">要接收消息的组</param>
+        /// <param name="data">附加数据</param>
+        /// <param name="callback">回调</param>
+        /// <returns>是否发送成功</returns>
         public bool Send(MessageType type, string to, string group, object data, Action<RequestInfo, ResponseAckInfo> callback)
         {
             var requestInfo = new Message.RequestInfo()
@@ -399,11 +430,29 @@ namespace BA.Framework.IMLib
             }
         }
 
+        /// <summary>
+        /// 发送文本消息
+        /// </summary>
+        /// <param name="to">要接收消息的用户</param>
+        /// <param name="group">要接收消息的组</param>
+        /// <param name="content">文本内容</param>
+        /// <param name="callback">回调</param>
+        /// <returns>是否发送成功</returns>
         [Debug]
         public bool SendText(string to, string group, string content, Action<RequestInfo, ResponseAckInfo> callback)
         {
             return Send(MessageType.Text, to, group, new { content = content }, callback);
         }
+
+        /// <summary>
+        /// 发送文件消息
+        /// </summary>
+        /// <param name="type">消息类型，参见枚举MessageType</param>
+        /// <param name="to">要接收消息的用户</param>
+        /// <param name="group">要接收消息的组</param>
+        /// <param name="path">文件路径</param>
+        /// <param name="callback">回调</param>
+         /// <returns>是否发送成功</returns>
         [Debug]
         public bool SendFile(MessageType type, string to, string group, string path, Action<RequestInfo, ResponseAckInfo> callback)
         {
@@ -423,51 +472,111 @@ namespace BA.Framework.IMLib
             }, callback);
         }
 
-        //image 
+        /// <summary>
+        /// 发送图片消息
+        /// </summary>
+        /// <param name="to">要接收消息的用户</param>
+        /// <param name="group">要接收消息的组</param>
+        /// <param name="path">文件路径</param>
+        /// <param name="callback">回调</param>
+        /// <returns>是否发送成功</returns>
         [Debug]
         public bool SendImage(string to, string group, string path, Action<RequestInfo, ResponseAckInfo> callback)
         {
             return SendFile(MessageType.Image, to, group, path, callback);
         }
-        //voice
-        //image 
+        
+        /// <summary>
+        /// 发送语音消息
+        /// </summary>
+        /// <param name="to">要接收消息的用户</param>
+        /// <param name="group">要接收消息的组</param>
+        /// <param name="path">文件路径</param>
+        /// <param name="callback">回调</param>
+        /// <returns>是否发送成功</returns>
         [Debug]
         public bool SendVoice(string to, string group, string path, Action<RequestInfo, ResponseAckInfo> callback)
         {
             return SendFile(MessageType.Voice, to, group, path, callback);
         }
 
+        /// <summary>
+        /// 发送视频消息
+        /// </summary>
+        /// <param name="to">要接收消息的用户</param>
+        /// <param name="group">要接收消息的组</param>
+        /// <param name="path">文件路径</param>
+        /// <param name="callback">回调</param>
+        /// <returns>是否发送成功</returns>
         [Debug]
         public bool SendVideo(string to, string group, string path, Action<RequestInfo, ResponseAckInfo> callback)
         {
             return SendFile(MessageType.Video, to, group, path, callback);
         }
+
+        /// <summary>
+        /// 邀请某人加入当前群组会话
+        /// </summary>
+        /// <param name="to">目标用户ID</param>
+        /// <param name="group">群组ID</param>
+        /// <param name="callback">回调</param>
+        /// <returns>是否发送成功</returns>
         [Debug]
         public bool Invite(string to, string group, Action<RequestInfo, ResponseAckInfo> callback)
         {
             return Send(MessageType.Invite, to, group, "", callback);
         }
+        
+        /// <summary>
+        /// 将当前会话转接给某人
+        /// </summary>
+        /// <param name="to">目标用户ID</param>
+        /// <param name="group">群组ID</param>
+        /// <param name="callback">回调</param>
+        /// <returns>是否发送成功</returns>
         [Debug]
         public bool Transfer(string to, string group, Action<RequestInfo, ResponseAckInfo> callback)
         {
             return Send(MessageType.Transfer, to, group, "", callback);
         }
+        
+        /// <summary>
+        /// 加入指定的群组会话
+        /// </summary>
+        /// <param name="group">群组ID</param>
+        /// <param name="callback">回调</param>
+        /// <returns>是否发送成功</returns>        
         [Debug]
         public bool Join(string group, Action<RequestInfo, ResponseAckInfo> callback)
         {
             return Send(MessageType.Join, "", group, "", callback);
         }
+        
+        /// <summary>
+        /// 离开指定的群组会话
+        /// </summary>
+        /// <param name="group">群组ID</param>
+        /// <param name="callback">回调</param>
+        /// <returns>是否发送成功</returns>    
         [Debug]
         public bool Leave(string group)
         {
             return Send(MessageType.Leave, "", group, "", null);
         }
 
+        /// <summary>
+        /// 撤销已发出的某条消息
+        /// </summary>
+        /// <param name="to">目标用户ID</param>
+        /// <param name="group">群组ID</param>
+        /// <param name="msg_id">需要撤销的消息ID</param>
+        /// <returns>是否发送成功</returns>
         [Debug]
         public bool Undo(string to, string group, string msg_id)
         {
             return Send(MessageType.undo, to, group, new { msg_id = msg_id }, null);
         }
+       
         #endregion
 
         #region 接收
@@ -610,12 +719,11 @@ namespace BA.Framework.IMLib
         /// <summary>
         /// 上传或重传,不支持100MB以上文件
         /// </summary>
-        /// <param name="msg_id"></param>
-        /// <param name="upload_url"></param>
-        /// <param name="path"></param>
-        /// <returns></returns>
+        /// <param name="msg_id">消息ID</param>
+        /// <param name="upload_url">上传地址</param>
+        /// <param name="path">本地路径</param>
         [Debug]
-        public bool Upload(string msg_id, string upload_url, string path)
+        public void Upload(string msg_id, string upload_url, string path)
         {
             FileMessageInfo info = FileMessageInfo.Create(upload_url);
             info.MessageId = msg_id;
@@ -648,8 +756,6 @@ namespace BA.Framework.IMLib
                     ProcessError(msg_id, ex);
                 }
             });
-
-            return true;
         }
 
         void UploadProgressChanged(object sender, UploadProgressChangedEventArgs e)
@@ -718,12 +824,14 @@ namespace BA.Framework.IMLib
 
         #region 下载
 
-        [Debug]
         /// <summary>
-        /// 异步下载（非断点），返回下载标示，用来获取下载进度或异常
+        /// 异步下载（非断点）
         /// </summary>
-        /// <param name="fileURL"></param>
-        /// <returns></returns>
+        /// <param name="fileURL">下载文件的HTTP地址</param>
+        /// <param name="filePath">保存的文件路径</param>
+        /// <param name="msgId">消息唯一ID</param>
+        /// <returns>如调用时不传msgId，则可通过返回值获取下载标示，用来获取下载进度或异常</returns>
+        [Debug]
         public string Download(string fileURL, string filePath, string msgId = "")
         {
             if (string.IsNullOrWhiteSpace(msgId))
@@ -789,7 +897,7 @@ namespace BA.Framework.IMLib
         /// <param name="filePath"></param>
         /// <param name="msgId"></param>
         /// <returns></returns>
-        public string Download_BreakPoint(string fileURL, string filePath, string msgId = "")
+        private string Download_BreakPoint(string fileURL, string filePath, string msgId = "")
         {
             if (string.IsNullOrWhiteSpace(msgId))
             {
@@ -853,8 +961,8 @@ namespace BA.Framework.IMLib
         /// <summary>
         /// 根据消息ID取消上传或下载的任务
         /// </summary>
-        /// <param name="msgId"></param>
-        /// <returns></returns>
+        /// <param name="msgId">消息ID</param>
+        /// <returns>是否取消成功</returns>
         public bool Cancel(string msgId)
         {
             var fileMsgInfo = m_FileMsgQueue.FirstOrDefault(x => x.MessageId == msgId);

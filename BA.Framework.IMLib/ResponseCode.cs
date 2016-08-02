@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace BA.Framework.IMLib
 {
+    /// <summary>
+    /// 消息返回状态码
+    /// </summary>
     public enum ResponseCode
     {
         /// <summary>

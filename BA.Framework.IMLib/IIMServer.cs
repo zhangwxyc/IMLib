@@ -8,9 +8,8 @@ namespace BA.Framework.IMLib
         int ConnectRetryTimes { get; set; }
         void Disconnect();
         string Download(string fileURL, string filePath, string msgId = "");
-        string Download_BreakPoint(string fileURL, string filePath, string msgId = "");
+        //string Download_BreakPoint(string fileURL, string filePath, string msgId = "");
         bool Invite(string to, string group, Action<BA.Framework.IMLib.Message.RequestInfo, BA.Framework.IMLib.Message.ResponseAckInfo> callback);
-        bool IsAvailable { get; }
         bool Join(string group, Action<BA.Framework.IMLib.Message.RequestInfo, BA.Framework.IMLib.Message.ResponseAckInfo> callback);
         bool Leave(string group);
         ILogger Log { set; }
@@ -28,6 +27,6 @@ namespace BA.Framework.IMLib
         bool SendVoice(string to, string group, string path, Action<BA.Framework.IMLib.Message.RequestInfo, BA.Framework.IMLib.Message.ResponseAckInfo> callback);
         bool Transfer(string to, string group, Action<BA.Framework.IMLib.Message.RequestInfo, BA.Framework.IMLib.Message.ResponseAckInfo> callback);
         bool Undo(string to, string group, string msg_id);
-        bool Upload(string msg_id, string upload_url, string path);
+        void Upload(string msg_id, string upload_url, string path);
     }
 }

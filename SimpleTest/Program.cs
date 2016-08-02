@@ -12,7 +12,7 @@ namespace SimpleTest
         static void Main(string[] args)
         {
            // IMTest();
-           List<UserPermission> list= BA.Framework.IMLib.Permission.GetUserPermission("3");
+          // List<UserPermission> list= BA.Framework.IMLib.Permission.GetUserPermission("3");
             //ImageThumbnail.Thumbnail.MakeThumbnailByRate(@"C:\Users\Public\Pictures\Sample Pictures\1.jpg", 0.2,"C:\\","C:\\123.jpg");
         }
 
@@ -45,7 +45,7 @@ namespace SimpleTest
                     }
                     else if (sendTxt == "down")
                     {
-                        server.Download_BreakPoint("http://oa.bitauto.com/ImportFiles/UpLoad/0/0/0/929273d4-6ae5-47ae-9478-4ca4735d0a8a.xls", "C:\\123.xls");
+                        //server.Download_BreakPoint("http://oa.bitauto.com/ImportFiles/UpLoad/0/0/0/929273d4-6ae5-47ae-9478-4ca4735d0a8a.xls", "C:\\123.xls");
                     }
                     else
 

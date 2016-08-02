@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace BA.Framework.IMLib
 {
     [AttributeUsage(AttributeTargets.Method)]
-    internal class DebugAttribute : Attribute
+    public class DebugAttribute : Attribute
     {
     }
 }

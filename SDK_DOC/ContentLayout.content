@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Topics>
-  <Topic id="0e525996-9add-4779-acbe-a1e916370acf" visible="True" isDefault="true" isSelected="true" title="Welcome to the [TODO: Add project name]">
+  <Topic id="0e525996-9add-4779-acbe-a1e916370acf" visible="True" isDefault="true" title="Welcome to the [IM C# SDK]">
     <HelpKeywords>
       <HelpKeyword index="K" term="Welcome" />
     </HelpKeywords>
@@ -9,7 +9,7 @@
     <HelpKeywords>
       <HelpKeyword index="K" term="version, history" />
     </HelpKeywords>
-    <Topic id="66aa5472-6aa8-4c6d-b337-df27c2b16f2f" visible="True" title="Version 1.0.0.0">
+    <Topic id="66aa5472-6aa8-4c6d-b337-df27c2b16f2f" visible="True" isSelected="true" title="Version 1.0.0.0">
       <HelpKeywords>
         <HelpKeyword index="K" term="version, 1.0.0.0" />
       </HelpKeywords>

@@ -17,11 +17,25 @@ namespace BA.Framework.IMLib
         Disconnect,
         Ping,
         //应答消息
-        //文本
+        /// <summary>
+        /// 纯文本消息，一般用于普通消息的发送
+        /// </summary>
         Text,
+        /// <summary>
+        /// 图片消息 
+        /// </summary>
         Image,
+        /// <summary>
+        /// 语音消息
+        /// </summary>
         Voice,
+        /// <summary>
+        /// 视频消息
+        /// </summary>
         Video,
+        /// <summary>
+        /// 用于构建发送文件的消息
+        /// </summary>
         File,
         Invite,
         Join,
