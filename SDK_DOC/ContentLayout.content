@@ -1,8 +1,2 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Topics>
-  <Topic id="0e525996-9add-4779-acbe-a1e916370acf" visible="True" isDefault="true" isSelected="true" title="Welcome to the [IM C# SDK]">
-    <HelpKeywords>
-      <HelpKeyword index="K" term="Welcome" />
-    </HelpKeywords>
-  </Topic>
-</Topics>
+<Topics />

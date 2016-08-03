@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace BA.Framework.IMLib
 {
+    
     /// <summary>
     /// 即时消息类型
     /// </summary>

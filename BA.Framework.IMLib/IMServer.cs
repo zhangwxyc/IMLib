@@ -133,7 +133,7 @@ namespace BA.Framework.IMLib
         }
 
         /// <summary>
-        /// ctr
+        /// 无参构造
         /// </summary>
         public IMServer()
         {
@@ -957,12 +957,13 @@ namespace BA.Framework.IMLib
         #endregion
 
         #region 取消
-        [Debug]
+
         /// <summary>
         /// 根据消息ID取消上传或下载的任务
         /// </summary>
         /// <param name="msgId">消息ID</param>
         /// <returns>是否取消成功</returns>
+        [Debug]
         public bool Cancel(string msgId)
         {
             var fileMsgInfo = m_FileMsgQueue.FirstOrDefault(x => x.MessageId == msgId);

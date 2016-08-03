@@ -7,8 +7,14 @@ using System.Threading.Tasks;
 
 namespace BA.Framework.IMLib.Message
 {
+    /// <summary>
+    /// 应答消息
+    /// </summary>
     public class ResponseAckInfo:BaseMessageInfo
     {
+        /// <summary>
+        /// 服务器应答状态码
+        /// </summary>
         [JsonProperty("status")]
         public ResponseCode Status { get; set; }
     }
