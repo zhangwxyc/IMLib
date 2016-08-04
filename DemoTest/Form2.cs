@@ -44,7 +44,7 @@ namespace DemoTest
 
         private void btn_SendFile_Click(object sender, EventArgs e)
         {
-            m_server.SendImage(tb_ToUser.Text, tb_group.Text, tbFilePath.Text, CallbackFun);
+            m_server.SendImage(tb_ToUser.Text, tb_group.Text, tbFilePath.Text, null);
         }
         void m_server_OnUpload(string arg1, long arg2, long arg3)
         {

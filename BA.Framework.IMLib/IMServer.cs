@@ -175,7 +175,7 @@ namespace BA.Framework.IMLib
                 }
                 // ,Callback = callback
             };
-            
+
             if (IsAvailable)
             {
                 //已经连接成功
@@ -190,20 +190,20 @@ namespace BA.Framework.IMLib
             try
             {
                 m_Client = new Socket(SocketType.Stream, ProtocolType.Tcp);
-
+                LogOpInfo("BeginConnect:", requestInfo.ToJsonString());
                 m_Client.Connect(host, port);
                 m_IpAddress = host;
                 m_Port = port;
                 if (m_Client.Connected)
                 {
                     byte[] sendData = requestInfo.ToByte<Message.RequestInfo>();
+
                     m_Client.Send(sendData);
-                    LogOpInfo("BeginConnect:", requestInfo.ToJsonString());
                     byte[] bufferData = new byte[BufferSize];
                     int receiveLen = m_Client.Receive(bufferData);
                     byte[] receivedData = bufferData.ToList().GetRange(0, receiveLen).ToArray();
                     var responseInfo = receivedData.ToObject<Message.ResponseAckInfo>();
-                    LogOpInfo("ConnectOver:", responseInfo.ToJsonString());
+                    //LogOpInfo("ConnectOver:", responseInfo.ToJsonString());
                     if (responseInfo.Status == ResponseCode.OK)
                     {
                         m_User.IsAuthenticated = true;
@@ -220,6 +220,7 @@ namespace BA.Framework.IMLib
                         //启动线程接收
                         AfterConnectedServer();
                         result = true;
+                        m_IsCanConnecting = true;
                     }
                     else
                     {
@@ -232,7 +233,7 @@ namespace BA.Framework.IMLib
             catch (Exception ex)
             {
                 LogInfo("ConnectError", ex);
-                RunUserCallback(callback, requestInfo, new ResponseAckInfo() { MsgType = MessageType.Ack, Status = ResponseCode.CLINET_ERR, Data = ex });
+                RunUserCallback(callback, requestInfo, new ResponseAckInfo() { MsgType = MessageType.Ack, Status = ResponseCode.CLINET_ERR, Data = ex.Message });
             }
 
             return result;
@@ -327,6 +328,7 @@ namespace BA.Framework.IMLib
 
         string _reConnectSync = string.Empty;
 
+        private bool m_IsCanConnecting = true;
         /// <summary>
         /// 重连
         /// </summary>
@@ -335,7 +337,7 @@ namespace BA.Framework.IMLib
             LogOpInfo("开始重连", "..");
             lock (_reConnectSync)
             {
-                if (IsAvailable)
+                if (IsAvailable || !m_IsCanConnecting)//防止多个线程引发的多次重连
                 {
                     return;
                 }
@@ -356,6 +358,11 @@ namespace BA.Framework.IMLib
                     else
                     {
                         LogOpInfo(string.Format("第{0}次开始重连失败", index + 1), "..");
+                        if (index == ConnectRetryTimes - 1)
+                        {
+                            m_IsCanConnecting = false;
+                            LogOpInfo("ReConnected fail", "连接断开");
+                        }
                     }
                     Thread.Sleep(ConnectRetryInnerTime * 1000);
                 }
@@ -452,7 +459,7 @@ namespace BA.Framework.IMLib
         /// <param name="group">要接收消息的组</param>
         /// <param name="path">文件路径</param>
         /// <param name="callback">回调</param>
-         /// <returns>是否发送成功</returns>
+        /// <returns>是否发送成功</returns>
         [Debug]
         public bool SendFile(MessageType type, string to, string group, string path, Action<RequestInfo, ResponseAckInfo> callback)
         {
@@ -485,7 +492,7 @@ namespace BA.Framework.IMLib
         {
             return SendFile(MessageType.Image, to, group, path, callback);
         }
-        
+
         /// <summary>
         /// 发送语音消息
         /// </summary>
@@ -526,7 +533,7 @@ namespace BA.Framework.IMLib
         {
             return Send(MessageType.Invite, to, group, "", callback);
         }
-        
+
         /// <summary>
         /// 将当前会话转接给某人
         /// </summary>
@@ -539,7 +546,7 @@ namespace BA.Framework.IMLib
         {
             return Send(MessageType.Transfer, to, group, "", callback);
         }
-        
+
         /// <summary>
         /// 加入指定的群组会话
         /// </summary>
@@ -551,7 +558,7 @@ namespace BA.Framework.IMLib
         {
             return Send(MessageType.Join, "", group, "", callback);
         }
-        
+
         /// <summary>
         /// 离开指定的群组会话
         /// </summary>
@@ -576,7 +583,7 @@ namespace BA.Framework.IMLib
         {
             return Send(MessageType.undo, to, group, new { msg_id = msg_id }, null);
         }
-       
+
         #endregion
 
         #region 接收
