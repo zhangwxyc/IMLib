@@ -218,8 +218,9 @@ namespace DemoForCsharpIMLib
                         tb_Log.AppendText(string.Format("--------------------------------------------\r\n{0}\r\n--------------------------------------------\r\n\r\n", message));
                     }
                     //
+                    tb_Log.ScrollToCaret();
                 });
-            tb_Log.ScrollToCaret();
+           
         }
 
     }
