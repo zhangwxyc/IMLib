@@ -253,6 +253,10 @@ namespace BA.Framework.IMLib
                         int len = m_Client.Receive(buffer);
                         lock (m_syncObject)
                         {
+                            if (len == 0)
+                            {
+                                continue;
+                            }
                             m_ReceiveBuffer.Enqueue(buffer.ToList().GetRange(0, len).ToArray().ToJsonString());
                         }
                     }
@@ -274,7 +278,7 @@ namespace BA.Framework.IMLib
                 try
                 {
                     string leftBufferString = "";
-                    while (IsAvailable)
+                    while (IsAvailable || m_ReceiveBuffer.Count != 0)
                     {
                         string bufferString = "";
                         bool isSuccess = m_ReceiveBuffer.TryDequeue(out bufferString);
@@ -707,6 +711,11 @@ namespace BA.Framework.IMLib
             ResponseAckInfo responseAckInfo = info.IMResponse;
             if (responseAckInfo.Status == ResponseCode.OK)
             {
+                if (responseAckInfo.Data==null)
+                {
+                    //已经有此文件
+                    return;
+                }
                 object upload_url = ((Newtonsoft.Json.Linq.JObject)(responseAckInfo.Data)).GetValue("upload_url");
                 if (upload_url != null
                     && !string.IsNullOrWhiteSpace(upload_url.ToString()))
@@ -768,10 +777,10 @@ namespace BA.Framework.IMLib
         void UploadProgressChanged(object sender, UploadProgressChangedEventArgs e)
         {
             var info = e.UserState as FileMessageInfo;
-            if (e.BytesSent != e.TotalBytesToSend)
-            {
-                OnUpload(info.MessageId, e.BytesSent, e.TotalBytesToSend);
-            }
+            //if (e.BytesSent != e.TotalBytesToSend)
+            //{
+            OnUpload(info.MessageId, e.BytesSent, e.TotalBytesToSend);
+            //}
             //发送完成触发多次
         }
 
@@ -791,7 +800,7 @@ namespace BA.Framework.IMLib
             {
                 fileMsgInfo.Status = 2;
                 FileInfo info = new FileInfo(fileMsgInfo.FilePath);
-                OnUpload(fileMsgInfo.MessageId, info.Length, info.Length);
+                // OnUpload(fileMsgInfo.MessageId, info.Length, info.Length);
                 //  contextInfo.IMRequest.Callback(contextInfo.IMRequest, contextInfo.IMResponse);
             }
         }
