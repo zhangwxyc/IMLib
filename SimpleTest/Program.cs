@@ -13,7 +13,7 @@ namespace SimpleTest
         {
            // IMTest();
           // List<UserPermission> list= BA.Framework.IMLib.Permission.GetUserPermission("3");
-            //ImageThumbnail.Thumbnail.MakeThumbnailByRate(@"C:\Users\Public\Pictures\Sample Pictures\1.jpg", 0.2,"C:\\","C:\\123.jpg");
+            ImageThumbnail.Thumbnail.MakeThumbnailByRate(@"E:\文件测试\2.gif", 0.5);
         }
 
         private static void IMTest()
