@@ -257,7 +257,12 @@ namespace BA.Framework.IMLib
                             {
                                 continue;
                             }
-                            m_ReceiveBuffer.Enqueue(buffer.ToList().GetRange(0, len).ToArray().ToJsonString());
+                            string bufferString = buffer.ToList().GetRange(0, len).ToArray().ToJsonString();
+                            if (string.IsNullOrEmpty(bufferString))
+                            {
+                                continue;
+                            }
+                            m_ReceiveBuffer.Enqueue(bufferString);
                         }
                     }
                 }
@@ -291,7 +296,10 @@ namespace BA.Framework.IMLib
                                 Receive(bufferMessages[index]);
                             }
                         }
-                        Thread.Sleep(1000);
+                        if (m_ReceiveBuffer.Count == 0)
+                        {
+                            Thread.Sleep(1);
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -711,7 +719,7 @@ namespace BA.Framework.IMLib
             ResponseAckInfo responseAckInfo = info.IMResponse;
             if (responseAckInfo.Status == ResponseCode.OK)
             {
-                if (responseAckInfo.Data==null)
+                if (responseAckInfo.Data == null)
                 {
                     //已经有此文件
                     return;
@@ -754,33 +762,39 @@ namespace BA.Framework.IMLib
             string contentType = createBytes.ContentType;
             info.Client.Headers.Add("Content-Type", contentType);
 
-            new TaskFactory().StartNew(() =>
-            {
-                try
-                {
-                    int leftLength = (int)GetUploadStartPos(upload_url);
-                    byte[] fileData = File.ReadAllBytes(path).Skip(leftLength).ToArray();
+            //new TaskFactory().StartNew(() =>
+            //{
 
-                    ArrayList bytesArray = new ArrayList();
-                    bytesArray.Add(createBytes.CreateFieldData("file", Path.GetFileName(path)
-                                                        , "application/octet-stream", fileData));
-                    byte[] postData = createBytes.JoinBytes(bytesArray);
-                    info.Client.UploadDataAsync(new Uri(upload_url), "POST", postData, info);
-                }
-                catch (Exception ex)
+            //});
+
+            Task.Run(() =>
                 {
-                    ProcessError(msg_id, ex);
-                }
-            });
+                    try
+                    {
+                        int leftLength = (int)GetUploadStartPos(upload_url);
+                        byte[] fileData = File.ReadAllBytes(path).Skip(leftLength).ToArray();
+                        info.StartPos = leftLength;
+                        ArrayList bytesArray = new ArrayList();
+                        bytesArray.Add(createBytes.CreateFieldData("file", Path.GetFileName(path)
+                                                            , "application/octet-stream", fileData));
+                        byte[] postData = createBytes.JoinBytes(bytesArray);
+                        info.TotalFileLength = postData.Length + leftLength;
+                        info.Client.UploadDataAsync(new Uri(upload_url), "POST", postData, info);
+                    }
+                    catch (Exception ex)
+                    {
+                        ProcessError(msg_id, ex);
+                    }
+                });
         }
 
         void UploadProgressChanged(object sender, UploadProgressChangedEventArgs e)
         {
             var info = e.UserState as FileMessageInfo;
-            //if (e.BytesSent != e.TotalBytesToSend)
-            //{
-            OnUpload(info.MessageId, e.BytesSent, e.TotalBytesToSend);
-            //}
+            if (e.BytesSent != e.TotalBytesToSend)
+            {
+                OnUpload(info.MessageId, e.BytesSent + info.StartPos, e.TotalBytesToSend + info.StartPos);
+            }
             //发送完成触发多次
         }
 
@@ -798,10 +812,26 @@ namespace BA.Framework.IMLib
             }
             else
             {
-                fileMsgInfo.Status = 2;
-                FileInfo info = new FileInfo(fileMsgInfo.FilePath);
-                // OnUpload(fileMsgInfo.MessageId, info.Length, info.Length);
-                //  contextInfo.IMRequest.Callback(contextInfo.IMRequest, contextInfo.IMResponse);
+                fileMsgInfo.Status = 4;
+                try
+                {
+                    var recObj = e.Result.ToObject<HttpServerResultInfo>();
+                    if (recObj.StatCode == 200)
+                    {
+                        //FileInfo info = new FileInfo(fileMsgInfo.FilePath);
+                        //OnUpload(fileMsgInfo.MessageId, info.Length, info.Length);
+                        OnUpload(fileMsgInfo.MessageId, fileMsgInfo.TotalFileLength, fileMsgInfo.TotalFileLength);
+                        fileMsgInfo.Status = 2;
+                    }
+                    else
+                    {
+                        ProcessError(fileMsgInfo.MessageId, new Exception("服务器响应异常:" + recObj.StatCode + recObj.Message));
+                    }
+                }
+                catch (Exception)
+                {
+                    ProcessError(fileMsgInfo.MessageId, new Exception("服务器响应异常"));
+                }
             }
         }
 

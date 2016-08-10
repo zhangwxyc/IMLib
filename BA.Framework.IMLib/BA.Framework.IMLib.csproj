@@ -61,6 +61,7 @@
     <Compile Include="IMServer.cs" />
     <Compile Include="MessageType.cs" />
     <Compile Include="Message\BaseMessageInfo.cs" />
+    <Compile Include="Message\HttpServerResultInfo.cs" />
     <Compile Include="Message\MessageContext.cs" />
     <Compile Include="Message\RequestInfo.cs" />
     <Compile Include="Message\ResponseAckInfo.cs" />

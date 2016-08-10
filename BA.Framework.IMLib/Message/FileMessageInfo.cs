@@ -42,5 +42,15 @@ namespace BA.Framework.IMLib.Message
         /// 文件本地路径
         /// </summary>
         public string FilePath { get; set; }
+
+        /// <summary>
+        /// 上传或下载断点位置
+        /// </summary>
+        public int StartPos { get; set; }
+
+        /// <summary>
+        /// 发送数据总大小
+        /// </summary>
+        public int TotalFileLength { get; set; }
     }
 }

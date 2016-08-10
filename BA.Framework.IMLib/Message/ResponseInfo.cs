@@ -11,6 +11,8 @@ namespace BA.Framework.IMLib.Message
     {
         [JsonProperty("from")]
         public string FromId { get; set; }
+        [JsonProperty("from_name")]
+        public string FromName { get; set; }
         [JsonProperty("group")]
         public string GroupId { get; set; }
         [JsonProperty("msg_time")]

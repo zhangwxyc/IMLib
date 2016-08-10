@@ -5,24 +5,49 @@ using System.Text;
 using System.Threading.Tasks;
 using BA.Framework.IMLib;
 using BA.Framework.IMLib.Message;
+using System.Threading;
+using System.IO;
 namespace SimpleTest
 {
     class Program
     {
         static void Main(string[] args)
         {
-           // IMTest();
-          // List<UserPermission> list= BA.Framework.IMLib.Permission.GetUserPermission("3");
-            ImageThumbnail.Thumbnail.MakeThumbnailByRate(@"E:\文件测试\2.gif", 0.5);
+
+            WebClientV2 wb = new WebClientV2();
+            string aa = Console.ReadLine();
+            wb.UploadProgressChanged += wb_UploadProgressChanged;
+            wb.UploadFileCompleted += wb_UploadFileCompleted;
+            while (aa != "q")
+            {
+                FileInfo info = new FileInfo(aa);
+                Console.WriteLine("Size:" + info.Length);
+                wb.UploadFileAsync(new Uri("http://192.168.87.200:8078/upload"), aa);
+                Thread.Sleep(5000);
+                aa = Console.ReadLine();
+            }
+            // IMTest();
+            // List<UserPermission> list= BA.Framework.IMLib.Permission.GetUserPermission("3");
+            // ImageThumbnail.Thumbnail.MakeThumbnailByRate(@"E:\文件测试\2.gif", 0.5);
+        }
+
+        static void wb_UploadFileCompleted(object sender, System.Net.UploadFileCompletedEventArgs e)
+        {
+           // Console.WriteLine("ok" + e.Error != null ? e.Error.Message : "");
+        }
+
+        static void wb_UploadProgressChanged(object sender, System.Net.UploadProgressChangedEventArgs e)
+        {
+            Console.WriteLine("{0} / {1}", e.BytesSent, e.TotalBytesToSend);
         }
 
         private static void IMTest()
         {
             IMServer server = new IMServer();
-            bool isConnected = server.Connect("192.168.87.114", 8282, "new", "star", "pc", Guid.NewGuid().ToString(),1, Connected);
+            bool isConnected = server.Connect("192.168.87.114", 8282, "new", "star", "pc", Guid.NewGuid().ToString(), 1, Connected);
             server.OnReceive += server_OnReceive;
             server.OnUpload += server_OnUpload;
-            server.OnError += server_OnError;
+            //server.OnError += server_OnError;
             server.OnDownload += server_OnDownload;
             if (isConnected)
             {
@@ -41,7 +66,7 @@ namespace SimpleTest
                     }
                     if (sendTxt == "file_test2")
                     {
-                        server.SendFile(MessageType.Image, "star", "", @"C:\Users\Public\Pictures\Sample Pictures\1.jpg",null);
+                        server.SendFile(MessageType.Image, "star", "", @"C:\Users\Public\Pictures\Sample Pictures\1.jpg", null);
                     }
                     else if (sendTxt == "down")
                     {
@@ -59,10 +84,10 @@ namespace SimpleTest
             Console.WriteLine("server_OnDownload:{0},{1}/{2}", arg1, arg2, arg3);
         }
 
-        static void server_OnError(object arg1, ErrorEventArgs arg2)
-        {
-            Console.WriteLine("server_OnError:{0}", arg2.ExceptionInfo.Message);
-        }
+        //static void server_OnError(object arg1, ErrorEventArgs arg2)
+        //{
+        //    Console.WriteLine("server_OnError:{0}", arg2.ExceptionInfo.Message);
+        //}
 
         static void server_OnUpload(string arg1, long arg2, long arg3)
         {
