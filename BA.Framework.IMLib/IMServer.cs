@@ -287,6 +287,11 @@ namespace BA.Framework.IMLib
                     {
                         string bufferString = "";
                         bool isSuccess = m_ReceiveBuffer.TryDequeue(out bufferString);
+                        if (m_ReceiveBuffer.Count > 0)
+                        {
+                            LogOpInfo("QueueCount", m_ReceiveBuffer.Count.ToString());
+                        }
+
                         if (isSuccess && !string.IsNullOrWhiteSpace(bufferString))
                         {
                             string[] bufferMessages = bufferString.Split('\0');
@@ -322,6 +327,7 @@ namespace BA.Framework.IMLib
             if (m_Client.Connected)
             {
                 //close
+                SendDisconnect();
                 m_User.IsAuthenticated = false;
                 m_Client.Disconnect(true);
                 m_Client.Close(1000);
@@ -596,6 +602,26 @@ namespace BA.Framework.IMLib
             return Send(MessageType.undo, to, group, new { msg_id = msg_id }, null);
         }
 
+        /// <summary>
+        /// 发送结束消息，不管是否成功
+        /// </summary>
+        /// <returns></returns>
+        private bool SendDisconnect()
+        {
+            try
+            {
+                byte[] sendData = new { type = "disconnect", msg_id = Guid.NewGuid().ToString() }.ToByte();
+
+                m_Client.BeginSend(sendData, 0, sendData.Length, SocketFlags.None, null, m_Client);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
         #endregion
 
         #region 接收
@@ -712,8 +738,6 @@ namespace BA.Framework.IMLib
         /// <summary>
         /// 对文件类型消息进行处理
         /// </summary>
-        /// <param name="requestInfo"></param>
-        /// <param name="responseAckInfo"></param>
         private void ProcessFileMessage(MessageContext info)
         {
             ResponseAckInfo responseAckInfo = info.IMResponse;
@@ -724,15 +748,22 @@ namespace BA.Framework.IMLib
                     //已经有此文件
                     return;
                 }
-                object upload_url = ((Newtonsoft.Json.Linq.JObject)(responseAckInfo.Data)).GetValue("upload_url");
-                if (upload_url != null
-                    && !string.IsNullOrWhiteSpace(upload_url.ToString()))
+
+                if (responseAckInfo.DataDict.ContainsKey("upload_url"))
                 {
-                    //Upload(info);
-                    Upload(info.IMRequest.MessageId, upload_url.ToString(), info.IMRequest.Data.path);
-                    //UploadFile(info.IMRequest.MessageId, upload_url.ToString(), info.IMRequest.Data.path);
-                    return;
+                    object upload_url = responseAckInfo.DataDict["upload_url"];
+                    //((Newtonsoft.Json.Linq.JObject)(responseAckInfo.Data)).GetValue("upload_url");
+                    if (upload_url != null
+                        && !string.IsNullOrWhiteSpace(upload_url.ToString()))
+                    {
+                        //Upload(info);
+                        Upload(info.IMRequest.MessageId, upload_url.ToString(), info.IMRequest.Data.path);
+                        //UploadFile(info.IMRequest.MessageId, upload_url.ToString(), info.IMRequest.Data.path);
+                        return;
+                    }
                 }
+
+
             }
             //info.IMRequest.Callback(info.IMRequest, info.IMResponse);
         }
@@ -749,6 +780,7 @@ namespace BA.Framework.IMLib
         [Debug]
         public void Upload(string msg_id, string upload_url, string path)
         {
+
             FileMessageInfo info = FileMessageInfo.Create(upload_url);
             info.MessageId = msg_id;
             info.ProcessType = FileProcessType.UPLOAD;
@@ -761,14 +793,14 @@ namespace BA.Framework.IMLib
             var createBytes = new CreateBytes();
             string contentType = createBytes.ContentType;
             info.Client.Headers.Add("Content-Type", contentType);
-
             //new TaskFactory().StartNew(() =>
             //{
 
             //});
 
-            Task.Run(() =>
+            new TaskFactory().StartNew(() =>
                 {
+                   // LogOpInfo("upload_begin" ,Thread.CurrentThread.ManagedThreadId.ToString());
                     try
                     {
                         int leftLength = (int)GetUploadStartPos(upload_url);
@@ -780,6 +812,8 @@ namespace BA.Framework.IMLib
                         byte[] postData = createBytes.JoinBytes(bytesArray);
                         info.TotalFileLength = postData.Length + leftLength;
                         info.Client.UploadDataAsync(new Uri(upload_url), "POST", postData, info);
+
+                       //LogOpInfo("upload_end", Thread.CurrentThread.ManagedThreadId.ToString());
                     }
                     catch (Exception ex)
                     {

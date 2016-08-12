@@ -20,6 +20,8 @@ namespace DemoTest
         public Form2()
         {
             InitializeComponent();
+
+
             m_server = new IMServer();
             m_server.OnDisconnect += m_server_OnDisconnect;
             m_server.OnDownload += m_server_OnDownload;

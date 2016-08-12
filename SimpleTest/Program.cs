@@ -13,19 +13,45 @@ namespace SimpleTest
     {
         static void Main(string[] args)
         {
+            List<dynamic> cc = new List<dynamic>();
+            cc.Add(1);
+            cc.Add("123");
+            cc.Add(new { a = 1, b = "123", c = new object() });
 
-            WebClientV2 wb = new WebClientV2();
-            string aa = Console.ReadLine();
-            wb.UploadProgressChanged += wb_UploadProgressChanged;
-            wb.UploadFileCompleted += wb_UploadFileCompleted;
-            while (aa != "q")
+            foreach (var data in cc)
             {
-                FileInfo info = new FileInfo(aa);
-                Console.WriteLine("Size:" + info.Length);
-                wb.UploadFileAsync(new Uri("http://192.168.87.200:8078/upload"), aa);
-                Thread.Sleep(5000);
-                aa = Console.ReadLine();
+                Dictionary<string, object> ss = new Dictionary<string, object>();
+
+                if (data != null)
+                {
+                    Type dType = data.GetType();
+                    if (dType.IsClass && dType.Name != "String")
+                    {
+                        var propArray = dType.GetProperties();
+                        foreach (var propItem in propArray)
+                        {
+                            ss.Add(propItem.Name, propItem.GetValue(data));
+                        }
+                    }
+                    else
+                        ss.Add("data", data);
+                }
+
             }
+
+
+            //WebClientV2 wb = new WebClientV2();
+            //string aa = Console.ReadLine();
+            //wb.UploadProgressChanged += wb_UploadProgressChanged;
+            //wb.UploadFileCompleted += wb_UploadFileCompleted;
+            //while (aa != "q")
+            //{
+            //    FileInfo info = new FileInfo(aa);
+            //    Console.WriteLine("Size:" + info.Length);
+            //    wb.UploadFileAsync(new Uri("http://192.168.87.200:8078/upload"), aa);
+            //    Thread.Sleep(5000);
+            //    aa = Console.ReadLine();
+            //}
             // IMTest();
             // List<UserPermission> list= BA.Framework.IMLib.Permission.GetUserPermission("3");
             // ImageThumbnail.Thumbnail.MakeThumbnailByRate(@"E:\文件测试\2.gif", 0.5);
@@ -33,7 +59,7 @@ namespace SimpleTest
 
         static void wb_UploadFileCompleted(object sender, System.Net.UploadFileCompletedEventArgs e)
         {
-           // Console.WriteLine("ok" + e.Error != null ? e.Error.Message : "");
+            // Console.WriteLine("ok" + e.Error != null ? e.Error.Message : "");
         }
 
         static void wb_UploadProgressChanged(object sender, System.Net.UploadProgressChangedEventArgs e)

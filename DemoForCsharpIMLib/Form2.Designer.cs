@@ -47,6 +47,7 @@
             this.tbFilePath = new System.Windows.Forms.TextBox();
             this.label8 = new System.Windows.Forms.Label();
             this.tb_group = new System.Windows.Forms.TextBox();
+            this.btn_clearLog = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // tb_Ip
@@ -216,11 +217,22 @@
             this.tb_group.TabIndex = 9;
             this.tb_group.Text = "a";
             // 
+            // btn_clearLog
+            // 
+            this.btn_clearLog.Location = new System.Drawing.Point(705, 49);
+            this.btn_clearLog.Name = "btn_clearLog";
+            this.btn_clearLog.Size = new System.Drawing.Size(75, 56);
+            this.btn_clearLog.TabIndex = 16;
+            this.btn_clearLog.Text = "清空log";
+            this.btn_clearLog.UseVisualStyleBackColor = true;
+            this.btn_clearLog.Click += new System.EventHandler(this.btn_clearLog_Click);
+            // 
             // Form2
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(828, 682);
+            this.Controls.Add(this.btn_clearLog);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.btn_SendFile);
             this.Controls.Add(this.btn_SendTxt);
@@ -269,6 +281,7 @@
         private System.Windows.Forms.TextBox tbFilePath;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.TextBox tb_group;
+        private System.Windows.Forms.Button btn_clearLog;
     }
 }
 

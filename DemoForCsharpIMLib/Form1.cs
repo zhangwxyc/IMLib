@@ -112,7 +112,7 @@ namespace DemoForCsharpIMLib
 
         private void btn_Connect_Click(object sender, EventArgs e)
         {
-            bool isConnected = m_server.Connect(tb_Ip.Text, int.Parse(tb_Port.Text), "ut", tb_userName.Text, Environment.UserName, Guid.NewGuid().ToString(),0, Connected);
+            bool isConnected = m_server.Connect(tb_Ip.Text, int.Parse(tb_Port.Text), "ut", tb_userName.Text, "DEVICEID:32443234234234;PUSHCODE:2342342342342", Guid.NewGuid().ToString(), 0, Connected);
         }
 
 

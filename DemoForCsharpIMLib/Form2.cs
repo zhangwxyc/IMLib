@@ -39,26 +39,26 @@ namespace DemoForCsharpIMLib
         ConcurrentDictionary<string, long> uploadProcessList = new ConcurrentDictionary<string, long>();
         void m_server_OnUpload(string arg1, long arg2, long arg3)
         {
-            if (arg2 == arg3)
-            {
-                Log(string.Format("File_Upload_{0}:{1} finish;", arg1, arg3));
-            }
-            else if (uploadProcessList.Keys.Contains(arg1))
-            {
-                if (uploadProcessList[arg1] < arg3 / 2 && arg3 / 2 < arg2)
-                {
-                    uploadProcessList[arg1] = arg2;
-                    Log(string.Format("File_Upload_{0}:{1}...;" , arg1, arg2));
-                }
-            }
-            else
-            {  
-                uploadProcessList.TryAdd(arg1, arg2);
-                Log(string.Format("File_Upload_{0}:{1}...;", arg1, arg2));
-            }
+            //if (arg2 == arg3)
+            //{
+            //    Log(string.Format("File_Upload_{0}:{1} finish;", arg1, arg3));
+            //}
+            //else if (uploadProcessList.Keys.Contains(arg1))
+            //{
+            //    if (uploadProcessList[arg1] < arg3 / 2 && arg3 / 2 < arg2)
+            //    {
+            //        uploadProcessList[arg1] = arg2;
+            //        Log(string.Format("File_Upload_{0}:{1}...;" , arg1, arg2));
+            //    }
+            //}
+            //else
+            //{  
+            //    uploadProcessList.TryAdd(arg1, arg2);
+            //    Log(string.Format("File_Upload_{0}:{1}...;", arg1, arg2));
+            //}
 
 
-            /*
+            
             LogAdv(string.Format("File_Upload_{0}:(.*) current", arg1), string.Format("File_Upload_{0}:{1} current", arg1, arg2));
 
             if (arg2 == arg3)
@@ -67,7 +67,7 @@ namespace DemoForCsharpIMLib
                 // Log(string.Format("File_Upload:{0} finish;", arg1));
                 LogAdv(string.Format("File_Upload_{0}:(.*) current", arg1), string.Format("File_Upload_{0}:{1} finish", arg1, arg3));
             }
-             * */
+             
         }
         void m_server_OnDownload(string arg1, long arg2, long arg3)
         {
@@ -134,7 +134,7 @@ namespace DemoForCsharpIMLib
 
         private void btn_Connect_Click(object sender, EventArgs e)
         {
-            bool isConnected = m_server.Connect(tb_Ip.Text, int.Parse(tb_Port.Text), "ut", tb_userName.Text, Environment.UserName, Guid.NewGuid().ToString(), 0, Connected);
+            bool isConnected = m_server.Connect(tb_Ip.Text, int.Parse(tb_Port.Text), "ut", tb_userName.Text, "DEVICEID:32443234234234;PUSHCODE:2342342342342", "653305f1-da01-43b8-846c-16e3f788ecd9", 0, Connected);
         }
 
 
@@ -243,6 +243,11 @@ namespace DemoForCsharpIMLib
                     tb_Log.ScrollToCaret();
                 });
 
+        }
+
+        private void btn_clearLog_Click(object sender, EventArgs e)
+        {
+            tb_Log.Text = "";
         }
 
     }
