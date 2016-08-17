@@ -48,6 +48,8 @@
             this.label8 = new System.Windows.Forms.Label();
             this.tb_group = new System.Windows.Forms.TextBox();
             this.btn_clearLog = new System.Windows.Forms.Button();
+            this.label4 = new System.Windows.Forms.Label();
+            this.tb_token = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // tb_Ip
@@ -97,7 +99,7 @@
             // 
             // tb_userName
             // 
-            this.tb_userName.Location = new System.Drawing.Point(158, 90);
+            this.tb_userName.Location = new System.Drawing.Point(158, 84);
             this.tb_userName.Name = "tb_userName";
             this.tb_userName.Size = new System.Drawing.Size(100, 21);
             this.tb_userName.TabIndex = 5;
@@ -106,7 +108,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(58, 93);
+            this.label2.Location = new System.Drawing.Point(58, 87);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(53, 12);
             this.label2.TabIndex = 6;
@@ -114,7 +116,7 @@
             // 
             // tb_Log
             // 
-            this.tb_Log.Location = new System.Drawing.Point(60, 168);
+            this.tb_Log.Location = new System.Drawing.Point(60, 182);
             this.tb_Log.Multiline = true;
             this.tb_Log.Name = "tb_Log";
             this.tb_Log.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
@@ -124,7 +126,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(58, 141);
+            this.label3.Location = new System.Drawing.Point(58, 158);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(35, 12);
             this.label3.TabIndex = 1;
@@ -227,6 +229,23 @@
             this.btn_clearLog.UseVisualStyleBackColor = true;
             this.btn_clearLog.Click += new System.EventHandler(this.btn_clearLog_Click);
             // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(58, 124);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(47, 12);
+            this.label4.TabIndex = 6;
+            this.label4.Text = "Token：";
+            // 
+            // tb_token
+            // 
+            this.tb_token.Location = new System.Drawing.Point(158, 122);
+            this.tb_token.Name = "tb_token";
+            this.tb_token.Size = new System.Drawing.Size(214, 21);
+            this.tb_token.TabIndex = 5;
+            this.tb_token.Text = "90f7b950-102b-4396-a131-7433c1d33aea";
+            // 
             // Form2
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -244,6 +263,8 @@
             this.Controls.Add(this.tb_group);
             this.Controls.Add(this.tb_ToUser);
             this.Controls.Add(this.tb_Log);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.tb_token);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.tb_userName);
             this.Controls.Add(this.btn_close);
@@ -282,6 +303,8 @@
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.TextBox tb_group;
         private System.Windows.Forms.Button btn_clearLog;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.TextBox tb_token;
     }
 }
 
