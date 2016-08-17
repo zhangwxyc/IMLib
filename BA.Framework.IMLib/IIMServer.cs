@@ -9,9 +9,9 @@ namespace BA.Framework.IMLib
         void Disconnect();
         string Download(string fileURL, string filePath, string msgId = "");
         //string Download_BreakPoint(string fileURL, string filePath, string msgId = "");
-        bool Invite(string to, string group, Action<BA.Framework.IMLib.Message.RequestInfo, BA.Framework.IMLib.Message.ResponseAckInfo> callback);
-        bool Join(string group, Action<BA.Framework.IMLib.Message.RequestInfo, BA.Framework.IMLib.Message.ResponseAckInfo> callback);
-        bool Leave(string group);
+        string Invite(string to, string group, Action<BA.Framework.IMLib.Message.RequestInfo, BA.Framework.IMLib.Message.ResponseAckInfo> callback);
+        string Join(string group, Action<BA.Framework.IMLib.Message.RequestInfo, BA.Framework.IMLib.Message.ResponseAckInfo> callback);
+        string Leave(string group);
         ILogger Log { set; }
         event Action OnDisconnect;
         event Action<string, long, long> OnDownload;
@@ -19,14 +19,14 @@ namespace BA.Framework.IMLib
         event Action<MessageType, string, string, string, int, object> OnReceive;
         event Action OnReConnected;
         event Action<string, long, long> OnUpload;
-        bool Send(MessageType type, string to, string group, object data, Action<BA.Framework.IMLib.Message.RequestInfo, BA.Framework.IMLib.Message.ResponseAckInfo> callback);
-        bool SendFile(MessageType type, string to, string group, string path, Action<BA.Framework.IMLib.Message.RequestInfo, BA.Framework.IMLib.Message.ResponseAckInfo> callback);
-        bool SendImage(string to, string group, string path, Action<BA.Framework.IMLib.Message.RequestInfo, BA.Framework.IMLib.Message.ResponseAckInfo> callback);
-        bool SendText(string to, string group, string content, Action<BA.Framework.IMLib.Message.RequestInfo, BA.Framework.IMLib.Message.ResponseAckInfo> callback);
-        bool SendVideo(string to, string group, string path, Action<BA.Framework.IMLib.Message.RequestInfo, BA.Framework.IMLib.Message.ResponseAckInfo> callback);
-        bool SendVoice(string to, string group, string path, Action<BA.Framework.IMLib.Message.RequestInfo, BA.Framework.IMLib.Message.ResponseAckInfo> callback);
-        bool Transfer(string to, string group, Action<BA.Framework.IMLib.Message.RequestInfo, BA.Framework.IMLib.Message.ResponseAckInfo> callback);
-        bool Undo(string to, string group, string msg_id);
+        string Send(MessageType type, string to, string group, object data, Action<BA.Framework.IMLib.Message.RequestInfo, BA.Framework.IMLib.Message.ResponseAckInfo> callback);
+        string SendFile(MessageType type, string to, string group, string path, Action<BA.Framework.IMLib.Message.RequestInfo, BA.Framework.IMLib.Message.ResponseAckInfo> callback);
+        string SendImage(string to, string group, string path, Action<BA.Framework.IMLib.Message.RequestInfo, BA.Framework.IMLib.Message.ResponseAckInfo> callback);
+        string SendText(string to, string group, string content, Action<BA.Framework.IMLib.Message.RequestInfo, BA.Framework.IMLib.Message.ResponseAckInfo> callback);
+        string SendVideo(string to, string group, string path, Action<BA.Framework.IMLib.Message.RequestInfo, BA.Framework.IMLib.Message.ResponseAckInfo> callback);
+        string SendVoice(string to, string group, string path, Action<BA.Framework.IMLib.Message.RequestInfo, BA.Framework.IMLib.Message.ResponseAckInfo> callback);
+        string Transfer(string to, string group, Action<BA.Framework.IMLib.Message.RequestInfo, BA.Framework.IMLib.Message.ResponseAckInfo> callback);
+        string Undo(string to, string group, string msg_id);
         void Upload(string msg_id, string upload_url, string path);
     }
 }

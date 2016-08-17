@@ -43,6 +43,7 @@ namespace BA.Framework.IMLib
         Leave,
         undo,
         Transfer,
+        History,
         //Location,
         //Vcard,
         Link,

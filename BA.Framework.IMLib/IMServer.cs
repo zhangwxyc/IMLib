@@ -399,8 +399,8 @@ namespace BA.Framework.IMLib
         /// <param name="group">要接收消息的组</param>
         /// <param name="data">附加数据</param>
         /// <param name="callback">回调</param>
-        /// <returns>是否发送成功</returns>
-        public bool Send(MessageType type, string to, string group, object data, Action<RequestInfo, ResponseAckInfo> callback)
+        /// <returns>消息ID</returns>
+        public string Send(MessageType type, string to, string group, object data, Action<RequestInfo, ResponseAckInfo> callback)
         {
             var requestInfo = new Message.RequestInfo()
             {
@@ -419,14 +419,12 @@ namespace BA.Framework.IMLib
             {
                 RunUserCallback(callback, requestInfo, new ResponseAckInfo() { MessageId = requestInfo.MessageId, MsgType = MessageType.Ack, Status = ResponseCode.NO_AUTH });
 
-                return false;
             }
 
             if (!Permission.CheckPermission(m_User, type))
             {
                 RunUserCallback(callback, requestInfo, new ResponseAckInfo() { MessageId = requestInfo.MessageId, MsgType = MessageType.Ack, Status = ResponseCode.NO_PERMISSION });
 
-                return false;
             }
 
             try
@@ -437,14 +435,15 @@ namespace BA.Framework.IMLib
 
                 m_Client.BeginSend(sendData, 0, sendData.Length, SocketFlags.None, null, m_Client);
 
-                return true;
             }
             catch (Exception ex)
             {
                 ProcessError(requestInfo.MessageId, ex);
                 RunUserCallback(callback, requestInfo, new ResponseAckInfo() { MessageId = requestInfo.MessageId, MsgType = MessageType.Ack, Status = ResponseCode.TIMEOUT });
-                return false;
             }
+
+            return requestInfo.MessageId;
+
         }
 
         private void LogOpInfo(string opType, string log)
@@ -462,9 +461,9 @@ namespace BA.Framework.IMLib
         /// <param name="group">要接收消息的组</param>
         /// <param name="content">文本内容</param>
         /// <param name="callback">回调</param>
-        /// <returns>是否发送成功</returns>
+        /// <returns>消息ID</returns>
         [Debug]
-        public bool SendText(string to, string group, string content, Action<RequestInfo, ResponseAckInfo> callback)
+        public string SendText(string to, string group, string content, Action<RequestInfo, ResponseAckInfo> callback)
         {
             return Send(MessageType.Text, to, group, new { content = content }, callback);
         }
@@ -477,13 +476,13 @@ namespace BA.Framework.IMLib
         /// <param name="group">要接收消息的组</param>
         /// <param name="path">文件路径</param>
         /// <param name="callback">回调</param>
-        /// <returns>是否发送成功</returns>
+        /// <returns>消息ID</returns>
         [Debug]
-        public bool SendFile(MessageType type, string to, string group, string path, Action<RequestInfo, ResponseAckInfo> callback)
+        public string SendFile(MessageType type, string to, string group, string path, Action<RequestInfo, ResponseAckInfo> callback)
         {
             if (!File.Exists(path))
             {
-                return false;
+                return "";
             }
             FileInfo fileInfo = new FileInfo(path);
 
@@ -504,9 +503,9 @@ namespace BA.Framework.IMLib
         /// <param name="group">要接收消息的组</param>
         /// <param name="path">文件路径</param>
         /// <param name="callback">回调</param>
-        /// <returns>是否发送成功</returns>
+        /// <returns>消息ID</returns>
         [Debug]
-        public bool SendImage(string to, string group, string path, Action<RequestInfo, ResponseAckInfo> callback)
+        public string SendImage(string to, string group, string path, Action<RequestInfo, ResponseAckInfo> callback)
         {
             return SendFile(MessageType.Image, to, group, path, callback);
         }
@@ -518,9 +517,9 @@ namespace BA.Framework.IMLib
         /// <param name="group">要接收消息的组</param>
         /// <param name="path">文件路径</param>
         /// <param name="callback">回调</param>
-        /// <returns>是否发送成功</returns>
+        /// <returns>消息ID</returns>
         [Debug]
-        public bool SendVoice(string to, string group, string path, Action<RequestInfo, ResponseAckInfo> callback)
+        public string SendVoice(string to, string group, string path, Action<RequestInfo, ResponseAckInfo> callback)
         {
             return SendFile(MessageType.Voice, to, group, path, callback);
         }
@@ -532,9 +531,9 @@ namespace BA.Framework.IMLib
         /// <param name="group">要接收消息的组</param>
         /// <param name="path">文件路径</param>
         /// <param name="callback">回调</param>
-        /// <returns>是否发送成功</returns>
+        /// <returns>消息ID</returns>
         [Debug]
-        public bool SendVideo(string to, string group, string path, Action<RequestInfo, ResponseAckInfo> callback)
+        public string SendVideo(string to, string group, string path, Action<RequestInfo, ResponseAckInfo> callback)
         {
             return SendFile(MessageType.Video, to, group, path, callback);
         }
@@ -545,9 +544,9 @@ namespace BA.Framework.IMLib
         /// <param name="to">目标用户ID</param>
         /// <param name="group">群组ID</param>
         /// <param name="callback">回调</param>
-        /// <returns>是否发送成功</returns>
+        /// <returns>消息ID</returns>
         [Debug]
-        public bool Invite(string to, string group, Action<RequestInfo, ResponseAckInfo> callback)
+        public string Invite(string to, string group, Action<RequestInfo, ResponseAckInfo> callback)
         {
             return Send(MessageType.Invite, to, group, "", callback);
         }
@@ -558,9 +557,9 @@ namespace BA.Framework.IMLib
         /// <param name="to">目标用户ID</param>
         /// <param name="group">群组ID</param>
         /// <param name="callback">回调</param>
-        /// <returns>是否发送成功</returns>
+        /// <returns>消息ID</returns>
         [Debug]
-        public bool Transfer(string to, string group, Action<RequestInfo, ResponseAckInfo> callback)
+        public string Transfer(string to, string group, Action<RequestInfo, ResponseAckInfo> callback)
         {
             return Send(MessageType.Transfer, to, group, "", callback);
         }
@@ -570,9 +569,9 @@ namespace BA.Framework.IMLib
         /// </summary>
         /// <param name="group">群组ID</param>
         /// <param name="callback">回调</param>
-        /// <returns>是否发送成功</returns>        
+        /// <returns>消息ID</returns>    
         [Debug]
-        public bool Join(string group, Action<RequestInfo, ResponseAckInfo> callback)
+        public string Join(string group, Action<RequestInfo, ResponseAckInfo> callback)
         {
             return Send(MessageType.Join, "", group, "", callback);
         }
@@ -582,9 +581,9 @@ namespace BA.Framework.IMLib
         /// </summary>
         /// <param name="group">群组ID</param>
         /// <param name="callback">回调</param>
-        /// <returns>是否发送成功</returns>    
+        /// <returns>消息ID</returns>
         [Debug]
-        public bool Leave(string group)
+        public string Leave(string group)
         {
             return Send(MessageType.Leave, "", group, "", null);
         }
@@ -595,11 +594,23 @@ namespace BA.Framework.IMLib
         /// <param name="to">目标用户ID</param>
         /// <param name="group">群组ID</param>
         /// <param name="msg_id">需要撤销的消息ID</param>
-        /// <returns>是否发送成功</returns>
+        /// <returns>消息ID</returns>
         [Debug]
-        public bool Undo(string to, string group, string msg_id)
+        public string Undo(string to, string group, string msg_id)
         {
             return Send(MessageType.undo, to, group, new { msg_id = msg_id }, null);
+        }
+
+        /// <summary>
+        /// 获取历史消息
+        /// </summary>
+        /// <param name="lastTick">收到最后一条消息的UNIX时间戳</param>
+        /// <param name="callback">回调</param>
+        /// <returns>消息ID</returns>
+        [Debug]
+        public string History(int lastTick, Action<RequestInfo, ResponseAckInfo> callback)
+        {
+            return Send(MessageType.History, "", "", new { lastTick = lastTick }, callback);
         }
 
         /// <summary>
@@ -800,7 +811,7 @@ namespace BA.Framework.IMLib
 
             new TaskFactory().StartNew(() =>
                 {
-                   // LogOpInfo("upload_begin" ,Thread.CurrentThread.ManagedThreadId.ToString());
+                    // LogOpInfo("upload_begin" ,Thread.CurrentThread.ManagedThreadId.ToString());
                     try
                     {
                         int leftLength = (int)GetUploadStartPos(upload_url);
@@ -813,7 +824,7 @@ namespace BA.Framework.IMLib
                         info.TotalFileLength = postData.Length + leftLength;
                         info.Client.UploadDataAsync(new Uri(upload_url), "POST", postData, info);
 
-                       //LogOpInfo("upload_end", Thread.CurrentThread.ManagedThreadId.ToString());
+                        //LogOpInfo("upload_end", Thread.CurrentThread.ManagedThreadId.ToString());
                     }
                     catch (Exception ex)
                     {
