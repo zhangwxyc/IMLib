@@ -58,7 +58,7 @@ namespace DemoForCsharpIMLib
             //}
 
 
-            
+
             LogAdv(string.Format("File_Upload_{0}:(.*) current", arg1), string.Format("File_Upload_{0}:{1} current", arg1, arg2));
 
             if (arg2 == arg3)
@@ -67,7 +67,7 @@ namespace DemoForCsharpIMLib
                 // Log(string.Format("File_Upload:{0} finish;", arg1));
                 LogAdv(string.Format("File_Upload_{0}:(.*) current", arg1), string.Format("File_Upload_{0}:{1} finish", arg1, arg3));
             }
-             
+
         }
         void m_server_OnDownload(string arg1, long arg2, long arg3)
         {
@@ -134,7 +134,7 @@ namespace DemoForCsharpIMLib
 
         private void btn_Connect_Click(object sender, EventArgs e)
         {
-            bool isConnected = m_server.Connect(tb_Ip.Text, int.Parse(tb_Port.Text), "ZaiXianGuWen", tb_userName.Text, "DEVICEID:32443234234234;PUSHCODE:2342342342342",tb_token.Text, 0, Connected);
+            bool isConnected = m_server.Connect(tb_Ip.Text, int.Parse(tb_Port.Text), tbUtype.Text, tb_userName.Text, "DEVICEID:32443234234234;PUSHCODE:2342342342342", tb_token.Text, 0, Connected);
         }
 
 
@@ -250,5 +250,22 @@ namespace DemoForCsharpIMLib
             tb_Log.Text = "";
         }
 
+        private void btn_Custom_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var data = tbCustom.Text.ToObject<Dictionary<string, object>>();
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("自定义消息的data 不正确");
+                return;
+            }
+
+            m_server.Send(MessageType.Custom, tb_ToUser.Text, tb_group.Text, tbCustom.Text.ToObject<Dictionary<string, object>>(), (rqInfo, ackInfo) =>
+            {
+                Log(string.Format("SendCustomCallBack:{0}", ackInfo.ToJsonString()));
+            });
+        }
     }
 }

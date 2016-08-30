@@ -50,13 +50,18 @@
             this.btn_clearLog = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.tb_token = new System.Windows.Forms.TextBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.tbUtype = new System.Windows.Forms.TextBox();
+            this.label10 = new System.Windows.Forms.Label();
+            this.tbCustom = new System.Windows.Forms.TextBox();
+            this.btn_Custom = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // tb_Ip
             // 
             this.tb_Ip.Location = new System.Drawing.Point(158, 46);
             this.tb_Ip.Name = "tb_Ip";
-            this.tb_Ip.Size = new System.Drawing.Size(136, 21);
+            this.tb_Ip.Size = new System.Drawing.Size(153, 21);
             this.tb_Ip.TabIndex = 0;
             this.tb_Ip.Text = "192.168.87.21";
             // 
@@ -71,7 +76,7 @@
             // 
             // tb_Port
             // 
-            this.tb_Port.Location = new System.Drawing.Point(300, 46);
+            this.tb_Port.Location = new System.Drawing.Point(317, 46);
             this.tb_Port.Name = "tb_Port";
             this.tb_Port.Size = new System.Drawing.Size(72, 21);
             this.tb_Port.TabIndex = 2;
@@ -101,7 +106,7 @@
             // 
             this.tb_userName.Location = new System.Drawing.Point(158, 84);
             this.tb_userName.Name = "tb_userName";
-            this.tb_userName.Size = new System.Drawing.Size(100, 21);
+            this.tb_userName.Size = new System.Drawing.Size(153, 21);
             this.tb_userName.TabIndex = 5;
             this.tb_userName.Text = "star";
             // 
@@ -116,17 +121,17 @@
             // 
             // tb_Log
             // 
-            this.tb_Log.Location = new System.Drawing.Point(60, 182);
+            this.tb_Log.Location = new System.Drawing.Point(60, 233);
             this.tb_Log.Multiline = true;
             this.tb_Log.Name = "tb_Log";
             this.tb_Log.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.tb_Log.Size = new System.Drawing.Size(720, 305);
+            this.tb_Log.Size = new System.Drawing.Size(720, 254);
             this.tb_Log.TabIndex = 7;
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(58, 158);
+            this.label3.Location = new System.Drawing.Point(58, 201);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(35, 12);
             this.label3.TabIndex = 1;
@@ -171,14 +176,14 @@
             // 
             this.tb_Txt.Location = new System.Drawing.Point(111, 574);
             this.tb_Txt.Name = "tb_Txt";
-            this.tb_Txt.Size = new System.Drawing.Size(288, 21);
+            this.tb_Txt.Size = new System.Drawing.Size(244, 21);
             this.tb_Txt.TabIndex = 12;
             // 
             // btn_SendTxt
             // 
-            this.btn_SendTxt.Location = new System.Drawing.Point(483, 572);
+            this.btn_SendTxt.Location = new System.Drawing.Point(385, 574);
             this.btn_SendTxt.Name = "btn_SendTxt";
-            this.btn_SendTxt.Size = new System.Drawing.Size(75, 23);
+            this.btn_SendTxt.Size = new System.Drawing.Size(55, 23);
             this.btn_SendTxt.TabIndex = 13;
             this.btn_SendTxt.Text = "发送";
             this.btn_SendTxt.UseVisualStyleBackColor = true;
@@ -186,9 +191,9 @@
             // 
             // btn_SendFile
             // 
-            this.btn_SendFile.Location = new System.Drawing.Point(483, 628);
+            this.btn_SendFile.Location = new System.Drawing.Point(385, 628);
             this.btn_SendFile.Name = "btn_SendFile";
-            this.btn_SendFile.Size = new System.Drawing.Size(75, 23);
+            this.btn_SendFile.Size = new System.Drawing.Size(55, 23);
             this.btn_SendFile.TabIndex = 13;
             this.btn_SendFile.Text = "发送";
             this.btn_SendFile.UseVisualStyleBackColor = true;
@@ -198,7 +203,7 @@
             // 
             this.tbFilePath.Location = new System.Drawing.Point(111, 628);
             this.tbFilePath.Name = "tbFilePath";
-            this.tbFilePath.Size = new System.Drawing.Size(288, 21);
+            this.tbFilePath.Size = new System.Drawing.Size(244, 21);
             this.tbFilePath.TabIndex = 12;
             this.tbFilePath.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.tbFilePath_MouseDoubleClick);
             // 
@@ -242,22 +247,69 @@
             // 
             this.tb_token.Location = new System.Drawing.Point(158, 122);
             this.tb_token.Name = "tb_token";
-            this.tb_token.Size = new System.Drawing.Size(214, 21);
+            this.tb_token.Size = new System.Drawing.Size(231, 21);
             this.tb_token.TabIndex = 5;
             this.tb_token.Text = "90f7b950-102b-4396-a131-7433c1d33aea";
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(58, 162);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(65, 12);
+            this.label9.TabIndex = 6;
+            this.label9.Text = "用户类型：";
+            // 
+            // tbUtype
+            // 
+            this.tbUtype.Location = new System.Drawing.Point(158, 159);
+            this.tbUtype.Name = "tbUtype";
+            this.tbUtype.Size = new System.Drawing.Size(153, 21);
+            this.tbUtype.TabIndex = 5;
+            this.tbUtype.Text = "ZaiXianGuWen";
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(520, 524);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(47, 12);
+            this.label10.TabIndex = 11;
+            this.label10.Text = "自定义:";
+            // 
+            // tbCustom
+            // 
+            this.tbCustom.Location = new System.Drawing.Point(565, 524);
+            this.tbCustom.Multiline = true;
+            this.tbCustom.Name = "tbCustom";
+            this.tbCustom.Size = new System.Drawing.Size(202, 124);
+            this.tbCustom.TabIndex = 12;
+            // 
+            // btn_Custom
+            // 
+            this.btn_Custom.Location = new System.Drawing.Point(789, 524);
+            this.btn_Custom.Name = "btn_Custom";
+            this.btn_Custom.Size = new System.Drawing.Size(39, 48);
+            this.btn_Custom.TabIndex = 13;
+            this.btn_Custom.Text = "发送";
+            this.btn_Custom.UseVisualStyleBackColor = true;
+            this.btn_Custom.Click += new System.EventHandler(this.btn_Custom_Click);
             // 
             // Form2
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(828, 682);
+            this.ClientSize = new System.Drawing.Size(840, 695);
             this.Controls.Add(this.btn_clearLog);
             this.Controls.Add(this.label8);
+            this.Controls.Add(this.btn_Custom);
             this.Controls.Add(this.btn_SendFile);
             this.Controls.Add(this.btn_SendTxt);
             this.Controls.Add(this.tbFilePath);
+            this.Controls.Add(this.tbCustom);
             this.Controls.Add(this.tb_Txt);
             this.Controls.Add(this.label7);
+            this.Controls.Add(this.label10);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.tb_group);
@@ -265,7 +317,9 @@
             this.Controls.Add(this.tb_Log);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.tb_token);
+            this.Controls.Add(this.label9);
             this.Controls.Add(this.label2);
+            this.Controls.Add(this.tbUtype);
             this.Controls.Add(this.tb_userName);
             this.Controls.Add(this.btn_close);
             this.Controls.Add(this.btn_Connect);
@@ -305,6 +359,11 @@
         private System.Windows.Forms.Button btn_clearLog;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox tb_token;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.TextBox tbUtype;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.TextBox tbCustom;
+        private System.Windows.Forms.Button btn_Custom;
     }
 }
 

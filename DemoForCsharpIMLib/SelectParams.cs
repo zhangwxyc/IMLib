@@ -36,7 +36,18 @@ namespace DemoForCsharpIMLib
                 }
                 else
                 {
-                        Pararms.Add(item.Text);
+                    string paramType = ParamList[item.Tag.ToString()].GetType().Name;
+                    switch (paramType)
+                    {
+                        case "Int32":
+                            Pararms.Add(int.Parse(item.Text));
+                            break;
+
+                        default:
+                            Pararms.Add(item.Text);
+                            break;
+                    }
+
                 }
             }
 
@@ -63,7 +74,7 @@ namespace DemoForCsharpIMLib
                 var lb = new Label();
                 lb.Text = item.Key;
                 var tb = new TextBox();
-                if (item.Value.GetType().Name == "String")
+                if (item.Value.GetType().IsValueType)
                 {
                     tb.Text = item.Value.ToString();
                 }

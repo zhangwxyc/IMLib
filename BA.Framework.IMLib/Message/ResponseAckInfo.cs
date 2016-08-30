@@ -17,5 +17,8 @@ namespace BA.Framework.IMLib.Message
         /// </summary>
         [JsonProperty("status")]
         public ResponseCode Status { get; set; }
+
+        [JsonProperty("msg_time")]
+        public int MsgTime { get; set; }
     }
 }

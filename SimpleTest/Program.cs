@@ -13,6 +13,28 @@ namespace SimpleTest
     {
         static void Main(string[] args)
         {
+            //DynamicTest();
+           byte[] aa= Encoding.UTF8.GetBytes("\0");
+
+            //WebClientV2 wb = new WebClientV2();
+            //string aa = Console.ReadLine();
+            //wb.UploadProgressChanged += wb_UploadProgressChanged;
+            //wb.UploadFileCompleted += wb_UploadFileCompleted;
+            //while (aa != "q")
+            //{
+            //    FileInfo info = new FileInfo(aa);
+            //    Console.WriteLine("Size:" + info.Length);
+            //    wb.UploadFileAsync(new Uri("http://192.168.87.200:8078/upload"), aa);
+            //    Thread.Sleep(5000);
+            //    aa = Console.ReadLine();
+            //}
+            //IMTest();
+            // List<UserPermission> list= BA.Framework.IMLib.Permission.GetUserPermission("3");
+            // ImageThumbnail.Thumbnail.MakeThumbnailByRate(@"E:\文件测试\2.gif", 0.5);
+        }
+
+        private static void DynamicTest()
+        {
             List<dynamic> cc = new List<dynamic>();
             cc.Add(1);
             cc.Add("123");
@@ -38,23 +60,6 @@ namespace SimpleTest
                 }
 
             }
-
-
-            //WebClientV2 wb = new WebClientV2();
-            //string aa = Console.ReadLine();
-            //wb.UploadProgressChanged += wb_UploadProgressChanged;
-            //wb.UploadFileCompleted += wb_UploadFileCompleted;
-            //while (aa != "q")
-            //{
-            //    FileInfo info = new FileInfo(aa);
-            //    Console.WriteLine("Size:" + info.Length);
-            //    wb.UploadFileAsync(new Uri("http://192.168.87.200:8078/upload"), aa);
-            //    Thread.Sleep(5000);
-            //    aa = Console.ReadLine();
-            //}
-            // IMTest();
-            // List<UserPermission> list= BA.Framework.IMLib.Permission.GetUserPermission("3");
-            // ImageThumbnail.Thumbnail.MakeThumbnailByRate(@"E:\文件测试\2.gif", 0.5);
         }
 
         static void wb_UploadFileCompleted(object sender, System.Net.UploadFileCompletedEventArgs e)
@@ -70,11 +75,12 @@ namespace SimpleTest
         private static void IMTest()
         {
             IMServer server = new IMServer();
-            bool isConnected = server.Connect("192.168.87.114", 8282, "new", "star", "pc", Guid.NewGuid().ToString(), 1, Connected);
+            bool isConnected = server.Connect("192.168.87.21", 8282, "new", "star", "pc", Guid.NewGuid().ToString(), 1, Connected);
             server.OnReceive += server_OnReceive;
             server.OnUpload += server_OnUpload;
             //server.OnError += server_OnError;
             server.OnDownload += server_OnDownload;
+
             if (isConnected)
             {
 
@@ -132,6 +138,7 @@ namespace SimpleTest
 
         public static void Connected(RequestInfo rqInfo, ResponseAckInfo ackInfo)
         {
+            int a = ackInfo.Data["11"];
             Console.WriteLine("Connected:{0}", ackInfo.MessageId);
         }
     }

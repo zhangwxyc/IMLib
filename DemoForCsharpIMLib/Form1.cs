@@ -33,17 +33,17 @@ namespace DemoForCsharpIMLib
 
         void m_server_OnLog(string arg1, string arg2)
         {
-            Log(string.Format("{0} -- {1}:{2}",DateTime.Now,arg1,arg2));
+            Log(string.Format("{0} -- {1}:{2}", DateTime.Now, arg1, arg2));
         }
 
         void m_server_OnUpload(string arg1, long arg2, long arg3)
         {
-            LogAdv(string.Format("File_Upload_{0}:(.*) current", arg1), string.Format("File_Upload_{0}:{1} current", arg1,arg2));
+            LogAdv(string.Format("File_Upload_{0}:(.*) current", arg1), string.Format("File_Upload_{0}:{1} current", arg1, arg2));
 
             if (arg2 == arg3)
             {
                 //上传完成
-               // Log(string.Format("File_Upload:{0} finish;", arg1));
+                // Log(string.Format("File_Upload:{0} finish;", arg1));
                 LogAdv(string.Format("File_Upload_{0}:(.*) current", arg1), string.Format("File_Upload_{0}:{1} finish", arg1, arg3));
             }
         }
@@ -53,7 +53,7 @@ namespace DemoForCsharpIMLib
             if (arg2 == arg3)
             {
                 //完成
-                LogAdv(string.Format("File_Download_{0}:(.*) current", arg1), string.Format("{2}_File_Download_{0}:{1} finish", arg1, arg3,DateTime.Now));
+                LogAdv(string.Format("File_Download_{0}:(.*) current", arg1), string.Format("{2}_File_Download_{0}:{1} finish", arg1, arg3, DateTime.Now));
             }
         }
         void m_server_OnReConnected()
@@ -63,7 +63,7 @@ namespace DemoForCsharpIMLib
 
         void m_server_OnReceive(MessageType arg1, string from, string group, string msg_id, int msg_time, object data)
         {
-           // Log(string.Format("Server:{0}", new { type = arg1, from = from, group = group, msg_id = msg_id, msg_time = msg_time, data = data }.ToJsonString()));
+            // Log(string.Format("Server:{0}", new { type = arg1, from = from, group = group, msg_id = msg_id, msg_time = msg_time, data = data }.ToJsonString()));
             switch (arg1)
             {
                 case MessageType.Ack:
@@ -112,7 +112,7 @@ namespace DemoForCsharpIMLib
 
         private void btn_Connect_Click(object sender, EventArgs e)
         {
-            bool isConnected = m_server.Connect(tb_Ip.Text, int.Parse(tb_Port.Text), "ut", tb_userName.Text, "DEVICEID:32443234234234;PUSHCODE:2342342342342", Guid.NewGuid().ToString(), 0, Connected);
+            bool isConnected = m_server.Connect(tb_Ip.Text, int.Parse(tb_Port.Text), "ZaiXianGuWen", tb_userName.Text, "DEVICEID:32443234234234;PUSHCODE:2342342342342", tb_token.Text, 0, Connected);
         }
 
 
@@ -162,7 +162,7 @@ namespace DemoForCsharpIMLib
         }
         public void Connected(RequestInfo rqInfo, ResponseAckInfo ackInfo)
         {
-            //Log(string.Format("client:{0}\r\nserver:{1}", rqInfo.ToJsonString(), ackInfo.ToJsonString()));
+            Log(string.Format("ConnectedCallBack:{0}", ackInfo.ToJsonString()));
         }
 
         void btn_Click(object sender, EventArgs e)
@@ -173,7 +173,7 @@ namespace DemoForCsharpIMLib
             Dictionary<string, object> pararms = new Dictionary<string, object>();
             var callback = new Action<RequestInfo, ResponseAckInfo>((rqInfo, ackInfo) =>
              {
-                // Log(string.Format("client:{0}\r\nserver:{1}", rqInfo.ToJsonString(), ackInfo.ToJsonString()));
+                 // Log(string.Format("client:{0}\r\nserver:{1}", rqInfo.ToJsonString(), ackInfo.ToJsonString()));
              });
             foreach (var item in parList)
             {
@@ -193,10 +193,15 @@ namespace DemoForCsharpIMLib
                 {
                     pararms.Add(item.Name, tbFilePath.Text);
                 }
+                else if (item.ParameterType.Name == "Int32")
+                {
+                    pararms.Add(item.Name, 0);
+                }
                 else
                 {
                     pararms.Add(item.Name, "");
                 }
+
             }
             SelectParams selectDig = new SelectParams(pararms);
             if (selectDig.ShowDialog() == DialogResult.OK)
@@ -225,7 +230,7 @@ namespace DemoForCsharpIMLib
         {
             m_server.SendText(tb_ToUser.Text, tb_group.Text, tb_Txt.Text, (rqInfo, ackInfo) =>
             {
-               // Log(string.Format("client:{0}\r\nserver:{1}", rqInfo.ToJsonString(), ackInfo.ToJsonString()));
+                // Log(string.Format("client:{0}\r\nserver:{1}", rqInfo.ToJsonString(), ackInfo.ToJsonString()));
             });
         }
 
@@ -252,6 +257,11 @@ namespace DemoForCsharpIMLib
                     //
                 });
             tb_Log.ScrollToCaret();
+        }
+
+        private void btn_clearLog_Click(object sender, EventArgs e)
+        {
+            tb_Log.Text = "";
         }
 
     }

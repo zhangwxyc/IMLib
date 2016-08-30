@@ -60,7 +60,13 @@ namespace BA.Framework.IMLib.Message
                             var propArray = dType.GetProperties();
                             foreach (var propItem in propArray)
                             {
-                                DataDict.Add(propItem.Name, propItem.GetValue(_data));
+                                try
+                                {
+                                    DataDict.Add(propItem.Name, propItem.GetValue(_data));
+                                }
+                                catch (Exception)
+                                {
+                                }
                             }
                         }
                     }

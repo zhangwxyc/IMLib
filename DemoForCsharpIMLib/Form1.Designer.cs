@@ -37,7 +37,6 @@
             this.label2 = new System.Windows.Forms.Label();
             this.tb_Log = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
             this.tb_ToUser = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
@@ -46,10 +45,12 @@
             this.btn_SendTxt = new System.Windows.Forms.Button();
             this.btn_SendFile = new System.Windows.Forms.Button();
             this.tbFilePath = new System.Windows.Forms.TextBox();
-            this.tb_Show = new System.Windows.Forms.RichTextBox();
             this.label8 = new System.Windows.Forms.Label();
             this.tb_group = new System.Windows.Forms.TextBox();
             this.panel_table = new System.Windows.Forms.TableLayoutPanel();
+            this.label9 = new System.Windows.Forms.Label();
+            this.tb_token = new System.Windows.Forms.TextBox();
+            this.btn_clearLog = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // tb_Ip
@@ -58,7 +59,7 @@
             this.tb_Ip.Name = "tb_Ip";
             this.tb_Ip.Size = new System.Drawing.Size(136, 21);
             this.tb_Ip.TabIndex = 0;
-            this.tb_Ip.Text = "192.168.87.114";
+            this.tb_Ip.Text = "192.168.87.21";
             // 
             // label1
             // 
@@ -79,7 +80,7 @@
             // 
             // btn_Connect
             // 
-            this.btn_Connect.Location = new System.Drawing.Point(483, 49);
+            this.btn_Connect.Location = new System.Drawing.Point(880, 49);
             this.btn_Connect.Name = "btn_Connect";
             this.btn_Connect.Size = new System.Drawing.Size(75, 56);
             this.btn_Connect.TabIndex = 3;
@@ -89,7 +90,7 @@
             // 
             // btn_close
             // 
-            this.btn_close.Location = new System.Drawing.Point(575, 49);
+            this.btn_close.Location = new System.Drawing.Point(972, 49);
             this.btn_close.Name = "btn_close";
             this.btn_close.Size = new System.Drawing.Size(75, 56);
             this.btn_close.TabIndex = 4;
@@ -116,30 +117,21 @@
             // 
             // tb_Log
             // 
-            this.tb_Log.Location = new System.Drawing.Point(685, 68);
+            this.tb_Log.Location = new System.Drawing.Point(60, 169);
             this.tb_Log.Multiline = true;
             this.tb_Log.Name = "tb_Log";
             this.tb_Log.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.tb_Log.Size = new System.Drawing.Size(492, 420);
+            this.tb_Log.Size = new System.Drawing.Size(1038, 321);
             this.tb_Log.TabIndex = 7;
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(683, 46);
+            this.label3.Location = new System.Drawing.Point(58, 136);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(35, 12);
             this.label3.TabIndex = 1;
             this.label3.Text = "Log：";
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(58, 138);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(35, 12);
-            this.label4.TabIndex = 8;
-            this.label4.Text = "show:";
             // 
             // tb_ToUser
             // 
@@ -147,7 +139,7 @@
             this.tb_ToUser.Name = "tb_ToUser";
             this.tb_ToUser.Size = new System.Drawing.Size(129, 21);
             this.tb_ToUser.TabIndex = 9;
-            this.tb_ToUser.Text = "s";
+            this.tb_ToUser.Text = "3";
             // 
             // label5
             // 
@@ -211,14 +203,6 @@
             this.tbFilePath.TabIndex = 12;
             this.tbFilePath.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.tbFilePath_MouseDoubleClick);
             // 
-            // tb_Show
-            // 
-            this.tb_Show.Location = new System.Drawing.Point(60, 170);
-            this.tb_Show.Name = "tb_Show";
-            this.tb_Show.Size = new System.Drawing.Size(590, 328);
-            this.tb_Show.TabIndex = 14;
-            this.tb_Show.Text = "";
-            // 
             // label8
             // 
             this.label8.AutoSize = true;
@@ -249,14 +233,43 @@
             this.panel_table.Size = new System.Drawing.Size(417, 127);
             this.panel_table.TabIndex = 16;
             // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(325, 93);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(47, 12);
+            this.label9.TabIndex = 18;
+            this.label9.Text = "Token：";
+            // 
+            // tb_token
+            // 
+            this.tb_token.Location = new System.Drawing.Point(411, 90);
+            this.tb_token.Name = "tb_token";
+            this.tb_token.Size = new System.Drawing.Size(401, 21);
+            this.tb_token.TabIndex = 17;
+            this.tb_token.Text = "90f7b950-102b-4396-a131-7433c1d33aea";
+            // 
+            // btn_clearLog
+            // 
+            this.btn_clearLog.Location = new System.Drawing.Point(1074, 49);
+            this.btn_clearLog.Name = "btn_clearLog";
+            this.btn_clearLog.Size = new System.Drawing.Size(75, 56);
+            this.btn_clearLog.TabIndex = 19;
+            this.btn_clearLog.Text = "清空log";
+            this.btn_clearLog.UseVisualStyleBackColor = true;
+            this.btn_clearLog.Click += new System.EventHandler(this.btn_clearLog_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1189, 682);
+            this.Controls.Add(this.btn_clearLog);
+            this.Controls.Add(this.label9);
+            this.Controls.Add(this.tb_token);
             this.Controls.Add(this.panel_table);
             this.Controls.Add(this.label8);
-            this.Controls.Add(this.tb_Show);
             this.Controls.Add(this.btn_SendFile);
             this.Controls.Add(this.btn_SendTxt);
             this.Controls.Add(this.tbFilePath);
@@ -266,7 +279,6 @@
             this.Controls.Add(this.label5);
             this.Controls.Add(this.tb_group);
             this.Controls.Add(this.tb_ToUser);
-            this.Controls.Add(this.label4);
             this.Controls.Add(this.tb_Log);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.tb_userName);
@@ -295,7 +307,6 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox tb_Log;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox tb_ToUser;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label6;
@@ -304,10 +315,12 @@
         private System.Windows.Forms.Button btn_SendTxt;
         private System.Windows.Forms.Button btn_SendFile;
         private System.Windows.Forms.TextBox tbFilePath;
-        private System.Windows.Forms.RichTextBox tb_Show;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.TextBox tb_group;
         private System.Windows.Forms.TableLayoutPanel panel_table;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.TextBox tb_token;
+        private System.Windows.Forms.Button btn_clearLog;
     }
 }
 

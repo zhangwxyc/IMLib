@@ -16,7 +16,7 @@ namespace BA.Framework.IMLib
     /// <summary>
     /// 访问IM服务器的主要类
     /// </summary>
-    public class IMServer : BA.Framework.IMLib.IIMServer
+    public class IMServer : BA.Framework.IMLib.IIMServer,IDisposable
     {
         /// <summary>
         /// 接收用户消息事件
@@ -418,13 +418,13 @@ namespace BA.Framework.IMLib
             if (!IsAvailable)
             {
                 RunUserCallback(callback, requestInfo, new ResponseAckInfo() { MessageId = requestInfo.MessageId, MsgType = MessageType.Ack, Status = ResponseCode.NO_AUTH });
-
+                return requestInfo.MessageId;
             }
 
             if (!Permission.CheckPermission(m_User, type))
             {
                 RunUserCallback(callback, requestInfo, new ResponseAckInfo() { MessageId = requestInfo.MessageId, MsgType = MessageType.Ack, Status = ResponseCode.NO_PERMISSION });
-
+                return requestInfo.MessageId;
             }
 
             try
@@ -1106,7 +1106,16 @@ namespace BA.Framework.IMLib
                 catch (Exception ex)
                 {
                     LogInfo("用户：回调异常", ex);
-                    throw ex;//抛出用户异常
+                    string runFunName = "未知方法";
+                    try
+                    {
+                        runFunName = callback.Method.ReflectedType.Name + "." + callback.Method.Name;
+                    }
+                    catch
+                    {
+
+                    }
+                    throw new Exception(string.Format("回调函数 {0} 异常", runFunName));//抛出用户异常
                 }
             }
         }
@@ -1243,5 +1252,18 @@ namespace BA.Framework.IMLib
         //    _receiveBuffer = new ConcurrentQueue<string>();
         //    _fileMsgQueue = new ConcurrentBag<FileMessageInfo>();
         //}
+
+        public void Dispose()
+        {
+            if (m_Client!=null)
+            {
+                if (m_Client.Connected)
+                {
+                   // m_Client.Disconnect(false);
+                    m_Client.Close();
+                }
+                m_Client.Dispose();
+            }
+        }
     }
 }
