@@ -14,20 +14,20 @@ namespace SimpleTest
         static void Main(string[] args)
         {
             //DynamicTest();
-           byte[] aa= Encoding.UTF8.GetBytes("\0");
+          // byte[] aa= Encoding.UTF8.GetBytes("\0");
 
-            //WebClientV2 wb = new WebClientV2();
-            //string aa = Console.ReadLine();
-            //wb.UploadProgressChanged += wb_UploadProgressChanged;
-            //wb.UploadFileCompleted += wb_UploadFileCompleted;
-            //while (aa != "q")
-            //{
-            //    FileInfo info = new FileInfo(aa);
-            //    Console.WriteLine("Size:" + info.Length);
-            //    wb.UploadFileAsync(new Uri("http://192.168.87.200:8078/upload"), aa);
-            //    Thread.Sleep(5000);
-            //    aa = Console.ReadLine();
-            //}
+            WebClientV2 wb = new WebClientV2();
+            string aa = Console.ReadLine();
+            wb.UploadProgressChanged += wb_UploadProgressChanged;
+            wb.UploadFileCompleted += wb_UploadFileCompleted;
+            while (aa != "q")
+            {
+                FileInfo info = new FileInfo(aa);
+                Console.WriteLine("Size:" + info.Length);
+                wb.UploadFileAsync(new Uri("http://localhost:46916/upload"), aa);
+                Thread.Sleep(5000);
+                aa = Console.ReadLine();
+            }
             //IMTest();
             // List<UserPermission> list= BA.Framework.IMLib.Permission.GetUserPermission("3");
             // ImageThumbnail.Thumbnail.MakeThumbnailByRate(@"E:\文件测试\2.gif", 0.5);
