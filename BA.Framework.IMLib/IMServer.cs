@@ -83,8 +83,13 @@ namespace BA.Framework.IMLib
                     //被动心跳检测
                     if (m_LastPingTime.AddSeconds(HeartTimeOut) < DateTime.Now)
                     {
+                        LogInfo(string.Format("上传收到心跳时间：{0}",m_LastPingTime),null);
                         Disconnect();
-                        return false;
+                        ReConnect();
+                        if (m_Client == null || !m_Client.Connected || !m_User.IsAuthenticated)
+                        {
+                            return false;
+                        }
                     }
                     return true;
                 }
