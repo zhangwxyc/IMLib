@@ -101,6 +101,7 @@ namespace BA.Framework.IMLib
 
         private ConcurrentQueue<string> m_ReceiveBuffer;
 
+        private ConcurrentQueue<List<byte>> m_ReceiveBufferBytes;
         /// <summary>
         /// 上传下载任务队列
         /// </summary>
@@ -111,7 +112,7 @@ namespace BA.Framework.IMLib
         /// <summary>
         /// socket缓存区大小,1024字节
         /// </summary>
-        private const int BufferSize = 10240;
+        private const int BufferSize = 1024;
 
         /// <summary>
         /// 心跳检测超时时间，30s
@@ -145,6 +146,7 @@ namespace BA.Framework.IMLib
             m_User = new UserIdentity();
             m_SendBuffer = new ConcurrentBag<RequestInfo>();
             m_ReceiveBuffer = new ConcurrentQueue<string>();
+            m_ReceiveBufferBytes = new ConcurrentQueue<List<byte>>();
             m_FileMsgQueue = new ConcurrentBag<FileMessageInfo>();
         }
 
@@ -245,7 +247,7 @@ namespace BA.Framework.IMLib
         }
 
         #region AfterConnectedServer
-        private void AfterConnectedServer()
+        private void AfterConnectedServer2()
         {
             ///接收buffer
             new TaskFactory().StartNew(() =>
@@ -336,6 +338,105 @@ namespace BA.Framework.IMLib
         }
         #endregion
 
+        #region AfterConnectedServer2
+        private void AfterConnectedServer()
+        {
+            ///接收buffer
+            new TaskFactory().StartNew(() =>
+            {
+                try
+                {
+                    byte[] buffer = new byte[BufferSize];
+                    while (IsAvailable)
+                    {
+                        int len = m_Client.Receive(buffer);
+                        lock (m_syncObject)
+                        {
+                            if (len == 0)
+                            {
+                                continue;
+                            }
+
+                            List<byte> bufferString = buffer.ToList().GetRange(0, len);
+                            if (bufferString.Count == 0)
+                            {
+                                continue;
+                            }
+                            m_ReceiveBufferBytes.Enqueue(bufferString);
+                        }
+                    }
+                }
+                catch (SocketException ex)
+                {
+                    ProcessError("", ex);
+                    LogInfo("接收网络异常", ex);
+                }
+                catch (Exception ex)
+                {
+                    LogInfo("接收其他异常", ex);
+                }
+            });
+
+            //解析buffer
+            new TaskFactory().StartNew(() =>
+            {
+                try
+                {
+                    List<byte> leftBufferString = new List<byte>();
+                    while (IsAvailable || m_ReceiveBuffer.Count != 0)
+                    {
+                        List<byte> bufferString = new List<byte>();
+                        bool isSuccess = m_ReceiveBufferBytes.TryDequeue(out bufferString);
+                        if (m_ReceiveBufferBytes.Count > 0)
+                        {
+                            LogOpInfo("QueueCount", m_ReceiveBufferBytes.Count.ToString());
+                        }
+
+                        if (isSuccess && bufferString.Count > 0)
+                        {
+                            //LogOpInfo("bf", bufferString);
+                            //LogOpInfo("lf", leftBufferString);
+                            if (leftBufferString.Count > 0)
+                            {
+                                //LogOpInfo("t_B", bufferString.Length.ToString());
+                                bufferString = Merge<byte>(leftBufferString.ToArray(), bufferString.ToArray()).ToList();
+                                //LogOpInfo("t_A", bufferString.Length.ToString());
+                            }
+                            //LogOpInfo("total", m_ReceiveBuffer.Count.ToString()+"$$$"+bufferString);
+
+                            do
+                            {
+                                int index = bufferString.FindIndex(x => x == 0);
+                                if (index == -1)
+                                {
+                                    break;
+                                }
+                                byte[] singleMsgData = bufferString.GetRange(0, index).ToArray();
+                                Receive(singleMsgData.ToJsonString());
+                                if (bufferString.Count <= index + 1)
+                                {
+                                    bufferString = new List<byte>();
+                                    break;
+                                }
+                                bufferString = bufferString.GetRange(index + 1, bufferString.Count - index - 1);
+                            } while (true);
+
+                            leftBufferString = bufferString;
+                        }
+                        if (m_ReceiveBufferBytes.Count == 0)
+                        {
+                            Thread.Sleep(1);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogInfo("接收处理异常", ex);
+                }
+            });
+        }
+        #endregion
+
         #endregion
 
         #region 关闭连接
@@ -381,7 +482,7 @@ namespace BA.Framework.IMLib
                 }
                 for (int index = 0; index < ConnectRetryTimes; index++)
                 {
-                    if (Connect(m_IpAddress, m_Port, m_User.AuthenticationType, m_User.Name, m_User.UserAgent, m_User.Token, m_LastRecServerTime, null))
+                    if (Connect(m_IpAddress, m_Port, m_User.UserType, m_User.Name, m_User.UserAgent, m_User.Token, m_LastRecServerTime, null))
                     {
 
                         if (OnReConnected != null)

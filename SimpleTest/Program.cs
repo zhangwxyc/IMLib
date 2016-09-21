@@ -16,6 +16,39 @@ namespace SimpleTest
             //DynamicTest();
           // byte[] aa= Encoding.UTF8.GetBytes("\0");
 
+            //TestFileUpload();
+            //IMTest();
+            // List<UserPermission> list= BA.Framework.IMLib.Permission.GetUserPermission("3");
+            // ImageThumbnail.Thumbnail.MakeThumbnailByRate(@"E:\文件测试\2.gif", 0.5);
+            string testData = "烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病 烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病 烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病 烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病 烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生";
+            byte[] datas = Encoding.UTF8.GetBytes(testData);
+
+            List<byte[]> items = new List<byte[]>();
+            List<string> si = new List<string>();
+            int len = 1024;
+            for (int index = 0; index < datas.Length; index+=len)
+            {
+                int leftLen=datas.Length-index;
+                int nextLen=leftLen>len?len:leftLen;
+                byte[] curData=new byte[nextLen];
+                Array.Copy(datas, index, curData, 0, nextLen);
+                items.Add(curData);
+                si.Add(Encoding.UTF8.GetString(curData));
+
+                Console.WriteLine(Encoding.UTF8.GetChars(curData));
+            }
+
+            List<byte[]> items1 = new List<byte[]>();
+            foreach (var item in si)
+            {
+                items1.Add(Encoding.UTF8.GetBytes(item));
+            }
+
+
+        }
+
+        private static void TestFileUpload()
+        {
             WebClientV2 wb = new WebClientV2();
             string aa = Console.ReadLine();
             wb.UploadProgressChanged += wb_UploadProgressChanged;
@@ -28,9 +61,6 @@ namespace SimpleTest
                 Thread.Sleep(5000);
                 aa = Console.ReadLine();
             }
-            //IMTest();
-            // List<UserPermission> list= BA.Framework.IMLib.Permission.GetUserPermission("3");
-            // ImageThumbnail.Thumbnail.MakeThumbnailByRate(@"E:\文件测试\2.gif", 0.5);
         }
 
         private static void DynamicTest()
