@@ -37,7 +37,10 @@ namespace BA.Framework.IMLib
         {
             return Encoding.UTF8.GetBytes(content+"\0");
         }
-
+        public static byte[] ToByte_S(this string content)
+        {
+            return Encoding.UTF8.GetBytes(content);
+        }
         public static string GetMD5HashFromFile(this string fileName)
         {
             using(FileStream file = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))

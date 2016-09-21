@@ -16,7 +16,7 @@ namespace BA.Framework.IMLib
     /// <summary>
     /// 访问IM服务器的主要类
     /// </summary>
-    public class IMServer : BA.Framework.IMLib.IIMServer,IDisposable
+    public class IMServer : BA.Framework.IMLib.IIMServer, IDisposable
     {
         /// <summary>
         /// 接收用户消息事件
@@ -83,7 +83,7 @@ namespace BA.Framework.IMLib
                     //被动心跳检测
                     if (m_LastPingTime.AddSeconds(HeartTimeOut) < DateTime.Now)
                     {
-                        LogInfo(string.Format("上传收到心跳时间：{0}",m_LastPingTime),null);
+                        LogInfo(string.Format("上传收到心跳时间：{0}", m_LastPingTime), null);
                         Disconnect();
                         ReConnect();
                         if (m_Client == null || !m_Client.Connected || !m_User.IsAuthenticated)
@@ -111,7 +111,7 @@ namespace BA.Framework.IMLib
         /// <summary>
         /// socket缓存区大小,1024字节
         /// </summary>
-        private const int BufferSize = 1024;
+        private const int BufferSize = 10240;
 
         /// <summary>
         /// 心跳检测超时时间，30s
@@ -299,6 +299,15 @@ namespace BA.Framework.IMLib
 
                         if (isSuccess && !string.IsNullOrWhiteSpace(bufferString))
                         {
+                            //LogOpInfo("bf", bufferString);
+                            //LogOpInfo("lf", leftBufferString);
+                            if (!string.IsNullOrEmpty(leftBufferString))
+                            {
+                                //LogOpInfo("t_B", bufferString.Length.ToString());
+                                bufferString = Merge<byte>(leftBufferString.ToByte_S(), bufferString.ToByte_S()).ToJsonString();
+                                //LogOpInfo("t_A", bufferString.Length.ToString());
+                            }
+                            //LogOpInfo("total", m_ReceiveBuffer.Count.ToString()+"$$$"+bufferString);
                             string[] bufferMessages = bufferString.Split('\0');
                             leftBufferString = bufferMessages[bufferMessages.Length - 1];
                             for (int index = 0; index < bufferMessages.Length - 1; index++)
@@ -318,7 +327,13 @@ namespace BA.Framework.IMLib
                 }
             });
         }
-
+        public static T[] Merge<T>(T[] arr, T[] other)
+        {
+            T[] buffer = new T[arr.Length + other.Length];
+            arr.CopyTo(buffer, 0);
+            other.CopyTo(buffer, arr.Length);
+            return buffer;
+        }
         #endregion
 
         #endregion
@@ -644,6 +659,8 @@ namespace BA.Framework.IMLib
         private void Receive(string bufferMessage)
         {
             LogOpInfo("Receive", bufferMessage);
+
+            m_LastPingTime = DateTime.Now;//采用客户端时间
 
             var baseResponseInfo = bufferMessage.ToObject<Message.BaseMessageInfo>();
             switch (baseResponseInfo.MsgType)
@@ -1260,11 +1277,11 @@ namespace BA.Framework.IMLib
 
         public void Dispose()
         {
-            if (m_Client!=null)
+            if (m_Client != null)
             {
                 if (m_Client.Connected)
                 {
-                   // m_Client.Disconnect(false);
+                    // m_Client.Disconnect(false);
                     m_Client.Close();
                 }
                 m_Client.Dispose();
