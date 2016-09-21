@@ -641,8 +641,9 @@ namespace BA.Framework.IMLib
         {
             try
             {
-                byte[] sendData = new { type = "disconnect", msg_id = Guid.NewGuid().ToString() }.ToByte();
-
+                var disconnectInfo = new { type = "disconnect", msg_id = Guid.NewGuid().ToString() };
+                LogOpInfo("disconnect", disconnectInfo.ToJsonString());
+                byte[] sendData = disconnectInfo.ToByte();
                 m_Client.BeginSend(sendData, 0, sendData.Length, SocketFlags.None, null, m_Client);
 
                 return true;
