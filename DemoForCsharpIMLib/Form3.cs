@@ -22,6 +22,7 @@ namespace DemoForCsharpIMLib
         {
             InitializeComponent();
             m_server = new IMServer();
+            m_server.Crypt_Version = "1.0";
             m_server.OnDisconnect += m_server_OnDisconnect;
             m_server.OnDownload += m_server_OnDownload;
             m_server.OnError += m_server_OnError;
@@ -30,7 +31,32 @@ namespace DemoForCsharpIMLib
             m_server.OnUpload += m_server_OnUpload;
             m_server.Log = new Logger();
             m_server.OnLog += m_server_OnLog;
+            m_server.EnableEncrypt = true;
+            m_server.ClientPingMode = BA.Framework.IMLib.Enums.PingMode.Passive;
+            m_server.PingInterval = 10;
         }
+
+        //RequestInfo EnData(RequestInfo info)
+        //{
+        //    if (m_server.Crypt_Version == "2.0")
+        //    {
+        //        info.Data = CommonCryptoService.Encrypt_DES(CommonExt.DynamicToJsonString(info.Data), info.MessageId);
+        //        return info;
+        //    }
+        //    else
+        //        return info;
+        //}
+
+        //dynamic DeData(BaseMessageInfo key)
+        //{
+        //    if (m_server.Crypt_Version == "2.0")
+        //    {
+        //        dynamic deString = CommonCryptoService.Decrypt_DES(key.Data.ToString(), key.MessageId);
+        //        return CommonExt.JsonStringToDynamic(deString.ToString());
+        //    }
+        //    else
+        //        return key.Data;
+        //}
 
         void m_server_OnLog(string arg1, string arg2)
         {
@@ -85,7 +111,7 @@ namespace DemoForCsharpIMLib
 
         void m_server_OnReceive(MessageType arg1, string from, string group, string msg_id, int msg_time, object data)
         {
-            // Log(string.Format("Server:{0}", new { type = arg1, from = from, group = group, msg_id = msg_id, msg_time = msg_time, data = data }.ToJsonString()));
+             Log(string.Format("Server:{0}", new { type = arg1, from = from, group = group, msg_id = msg_id, msg_time = msg_time, data = data }.ToJsonString()));
             switch (arg1)
             {
                 case MessageType.Ack:
@@ -134,6 +160,15 @@ namespace DemoForCsharpIMLib
 
         private void btn_Connect_Click(object sender, EventArgs e)
         {
+            m_server.EnableEncrypt = cbEncode.Checked;
+            if (cbEncode.Checked)
+            {
+                m_server.Crypt_Version = "2.0";
+            }
+            else
+            {
+                m_server.Crypt_Version = "1.0";
+            }
             bool isConnected = m_server.Connect(tb_Ip.Text, int.Parse(tb_Port.Text), tbUtype.Text, tb_userName.Text, "DEVICEID:32443234234234;PUSHCODE:2342342342342", tb_token.Text, 0, Connected);
         }
 
@@ -268,11 +303,11 @@ namespace DemoForCsharpIMLib
                             Log(string.Format("SendTxtCallBack:{0}", ackInfo.ToJsonString()));
                             LoopTestLogToFile(rqInfo, ackInfo, sendData);
                         });
-                        if (innveralTime>0)
+                        if (innveralTime > 0)
                         {
-                            System.Threading.Thread.Sleep(1000*innveralTime);
+                            System.Threading.Thread.Sleep(1000 * innveralTime);
                         }
-                        
+
                     }
                 });
         }
@@ -357,6 +392,37 @@ namespace DemoForCsharpIMLib
             {
                 Log(string.Format("SendCustomCallBack:{0}", ackInfo.ToJsonString()));
             });
+        }
+
+       public  CryptForm childForm;
+
+        private void btn_Crypt_Click(object sender, EventArgs e)
+        {
+            if (childForm==null)
+            {
+                childForm = new CryptForm();
+            }
+            childForm.Show();
+            childForm.Activate();
+        }
+
+
+        /// <summary>
+        /// 判断窗体是否已打开
+        /// </summary>
+        private bool IsExistForm(Form frm)
+        {
+            if (frm == null) return false;
+            foreach (Form childFrm in this.MdiChildren)
+            {
+                //用子窗体的Name进行判断，如果存在则将他激活
+                if (childFrm.Text == frm.Text)
+                {
+                    childFrm.Activate();
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

@@ -13,24 +13,36 @@ namespace SimpleTest
     {
         static void Main(string[] args)
         {
+
+            dynamic cc = new { Id = 1, name = "dfsfsd" };
+
+         string  ss= Newtonsoft.Json.JsonConvert.SerializeObject(cc);
+
             //DynamicTest();
-          // byte[] aa= Encoding.UTF8.GetBytes("\0");
+            // byte[] aa= Encoding.UTF8.GetBytes("\0");
 
             //TestFileUpload();
             //IMTest();
             // List<UserPermission> list= BA.Framework.IMLib.Permission.GetUserPermission("3");
             // ImageThumbnail.Thumbnail.MakeThumbnailByRate(@"E:\文件测试\2.gif", 0.5);
+            //BigDataTest();
+
+
+        }
+
+        private static void BigDataTest()
+        {
             string testData = "烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病 烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病 烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病 烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病 烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生虫病烦恼寄生";
             byte[] datas = Encoding.UTF8.GetBytes(testData);
 
             List<byte[]> items = new List<byte[]>();
             List<string> si = new List<string>();
             int len = 1024;
-            for (int index = 0; index < datas.Length; index+=len)
+            for (int index = 0; index < datas.Length; index += len)
             {
-                int leftLen=datas.Length-index;
-                int nextLen=leftLen>len?len:leftLen;
-                byte[] curData=new byte[nextLen];
+                int leftLen = datas.Length - index;
+                int nextLen = leftLen > len ? len : leftLen;
+                byte[] curData = new byte[nextLen];
                 Array.Copy(datas, index, curData, 0, nextLen);
                 items.Add(curData);
                 si.Add(Encoding.UTF8.GetString(curData));
@@ -43,8 +55,6 @@ namespace SimpleTest
             {
                 items1.Add(Encoding.UTF8.GetBytes(item));
             }
-
-
         }
 
         private static void TestFileUpload()

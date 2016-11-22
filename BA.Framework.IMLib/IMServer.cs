@@ -1,4 +1,6 @@
-﻿using BA.Framework.IMLib.Message;
+﻿using BA.Framework.IMLib.Enums;
+using BA.Framework.IMLib.Message;
+using BA.Framework.IMLib.TransferEncrypt;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -18,6 +20,68 @@ namespace BA.Framework.IMLib
     /// </summary>
     public class IMServer : BA.Framework.IMLib.IIMServer, IDisposable
     {
+        private DateTime _lastSendTime;
+
+        private PingMode clientPingMode = PingMode.Passive;
+
+        /// <summary>
+        /// 客户端ping模式
+        /// </summary>
+        public PingMode ClientPingMode
+        {
+            get { return clientPingMode; }
+            set { clientPingMode = value; }
+        }
+
+        private string pingData;
+        /// <summary>
+        /// 主动模式下可自定义ping包数据
+        /// </summary>
+        public string PingData
+        {
+            get { return pingData; }
+            set
+            {
+                pingData = value;
+            }
+        }
+        /// <summary>
+        /// 主动模式下可自定义ping包间隔
+        /// </summary>
+        public int PingInterval { get; set; }
+
+        public System.Timers.Timer PingTimer { get; set; }
+
+        /// <summary>
+        /// 默认初始1.0,可在连接前设置
+        /// </summary>
+        public string Crypt_Version { get; set; }
+
+        private bool enableEncrypt;
+        /// <summary>
+        /// 是否启用传输加密
+        /// </summary>
+        public bool EnableEncrypt
+        {
+            get { return enableEncrypt; }
+            set { enableEncrypt = value; }
+        }
+
+        /// <summary>
+        /// 启用传输加密时可定义加密适配器，默认使用系统
+        /// </summary>
+        public IMessageEncrypt EncryptAdapter;
+
+        ///// <summary>
+        ///// 消息加密处理
+        ///// </summary>
+        //public Func<RequestInfo, RequestInfo> EnCryptOp;
+
+        ///// <summary>
+        ///// 消息解密处理
+        ///// </summary>
+        //public Func<BaseMessageInfo, dynamic> DeCryptOp;
+
         /// <summary>
         /// 接收用户消息事件
         /// </summary>
@@ -81,7 +145,7 @@ namespace BA.Framework.IMLib
                 if (m_Client != null && m_Client.Connected && m_User.IsAuthenticated)
                 {
                     //被动心跳检测
-                    if (m_LastPingTime.AddSeconds(HeartTimeOut) < DateTime.Now)
+                    if (m_LastPingTime.AddSeconds(HeartTimeOut) < DateTime.Now && clientPingMode == PingMode.Passive)
                     {
                         LogInfo(string.Format("上传收到心跳时间：{0}", m_LastPingTime), null);
                         Disconnect();
@@ -112,7 +176,7 @@ namespace BA.Framework.IMLib
         /// <summary>
         /// socket缓存区大小,1024字节
         /// </summary>
-        private const int BufferSize = 1024;
+        private const int BufferSize = 102400;
 
         /// <summary>
         /// 心跳检测超时时间，30s
@@ -148,6 +212,28 @@ namespace BA.Framework.IMLib
             m_ReceiveBuffer = new ConcurrentQueue<string>();
             m_ReceiveBufferBytes = new ConcurrentQueue<List<byte>>();
             m_FileMsgQueue = new ConcurrentBag<FileMessageInfo>();
+            InitEncrypt();
+            InitPing();
+        }
+
+        private void InitEncrypt()
+        {
+            Crypt_Version = "1.0";
+            //设置默认加密方式
+            EncryptAdapter = new MessageEncrypt();
+        }
+
+        private void InitPing()
+        {
+            PingData = new { type = "ping" }.ToJsonString();
+            PingInterval = 5;
+            PingTimer = new System.Timers.Timer(500);
+            PingTimer.Elapsed += PingTimer_Elapsed;
+        }
+
+        void PingTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            SendPing();
         }
 
 
@@ -179,8 +265,8 @@ namespace BA.Framework.IMLib
                     userAgent = userAgent,
                     accessToken = accessToken,
                     lastTick = lastTick
-                }
-                // ,Callback = callback
+                },
+                Version = Crypt_Version
             };
 
             if (IsAvailable)
@@ -197,6 +283,11 @@ namespace BA.Framework.IMLib
             try
             {
                 m_Client = new Socket(SocketType.Stream, ProtocolType.Tcp);
+                if (EnableEncrypt)
+                {
+                    requestInfo.Data = EncryptAdapter.Encode(CommonExt.DynamicToJsonString(requestInfo.Data), requestInfo);
+                }
+
                 LogOpInfo("BeginConnect:", requestInfo.ToJsonString());
                 m_Client.Connect(host, port);
                 m_IpAddress = host;
@@ -210,6 +301,11 @@ namespace BA.Framework.IMLib
                     int receiveLen = m_Client.Receive(bufferData);
                     byte[] receivedData = bufferData.ToList().GetRange(0, receiveLen).ToArray();
                     var responseInfo = receivedData.ToObject<Message.ResponseAckInfo>();
+                    if (EnableEncrypt)
+                    {
+                        dynamic deString = CommonCryptoService.Decrypt_DES(responseInfo.Data.ToString(), responseInfo.MessageId);
+                        responseInfo.Data = CommonExt.JsonStringToDynamic(deString.ToString());
+                    }
                     //LogOpInfo("ConnectOver:", responseInfo.ToJsonString());
                     if (responseInfo.Status == ResponseCode.OK)
                     {
@@ -228,6 +324,13 @@ namespace BA.Framework.IMLib
                         AfterConnectedServer();
                         result = true;
                         m_IsCanConnecting = true;
+
+                        if (this.clientPingMode == PingMode.Initiative)
+                        {
+                            _lastSendTime = DateTime.Now;
+                            PingTimer.Start();
+                        }
+
                     }
                     else
                     {
@@ -247,88 +350,6 @@ namespace BA.Framework.IMLib
         }
 
         #region AfterConnectedServer
-        private void AfterConnectedServer2()
-        {
-            ///接收buffer
-            new TaskFactory().StartNew(() =>
-            {
-                try
-                {
-                    byte[] buffer = new byte[BufferSize];
-                    while (IsAvailable)
-                    {
-                        int len = m_Client.Receive(buffer);
-                        lock (m_syncObject)
-                        {
-                            if (len == 0)
-                            {
-                                continue;
-                            }
-                            string bufferString = buffer.ToList().GetRange(0, len).ToArray().ToJsonString();
-                            if (string.IsNullOrEmpty(bufferString))
-                            {
-                                continue;
-                            }
-                            m_ReceiveBuffer.Enqueue(bufferString);
-                        }
-                    }
-                }
-                catch (SocketException ex)
-                {
-                    ProcessError("", ex);
-                    LogInfo("接收网络异常", ex);
-                }
-                catch (Exception ex)
-                {
-                    LogInfo("接收其他异常", ex);
-                }
-            });
-
-            //解析buffer
-            new TaskFactory().StartNew(() =>
-            {
-                try
-                {
-                    string leftBufferString = "";
-                    while (IsAvailable || m_ReceiveBuffer.Count != 0)
-                    {
-                        string bufferString = "";
-                        bool isSuccess = m_ReceiveBuffer.TryDequeue(out bufferString);
-                        if (m_ReceiveBuffer.Count > 0)
-                        {
-                            LogOpInfo("QueueCount", m_ReceiveBuffer.Count.ToString());
-                        }
-
-                        if (isSuccess && !string.IsNullOrWhiteSpace(bufferString))
-                        {
-                            //LogOpInfo("bf", bufferString);
-                            //LogOpInfo("lf", leftBufferString);
-                            if (!string.IsNullOrEmpty(leftBufferString))
-                            {
-                                //LogOpInfo("t_B", bufferString.Length.ToString());
-                                bufferString = Merge<byte>(leftBufferString.ToByte_S(), bufferString.ToByte_S()).ToJsonString();
-                                //LogOpInfo("t_A", bufferString.Length.ToString());
-                            }
-                            //LogOpInfo("total", m_ReceiveBuffer.Count.ToString()+"$$$"+bufferString);
-                            string[] bufferMessages = bufferString.Split('\0');
-                            leftBufferString = bufferMessages[bufferMessages.Length - 1];
-                            for (int index = 0; index < bufferMessages.Length - 1; index++)
-                            {
-                                Receive(bufferMessages[index]);
-                            }
-                        }
-                        if (m_ReceiveBuffer.Count == 0)
-                        {
-                            Thread.Sleep(1);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogInfo("接收处理异常", ex);
-                }
-            });
-        }
         public static T[] Merge<T>(T[] arr, T[] other)
         {
             T[] buffer = new T[arr.Length + other.Length];
@@ -452,6 +473,7 @@ namespace BA.Framework.IMLib
                 m_User.IsAuthenticated = false;
                 m_Client.Disconnect(true);
                 m_Client.Close(1000);
+                PingTimer.Stop();
             }
             if (OnDisconnect != null)
             {
@@ -547,7 +569,11 @@ namespace BA.Framework.IMLib
                 RunUserCallback(callback, requestInfo, new ResponseAckInfo() { MessageId = requestInfo.MessageId, MsgType = MessageType.Ack, Status = ResponseCode.NO_PERMISSION });
                 return requestInfo.MessageId;
             }
-
+            if (EnableEncrypt)
+            {
+                requestInfo.Data = EncryptAdapter.Encode(CommonExt.DynamicToJsonString(requestInfo.Data), requestInfo);
+                LogOpInfo("Send--AfterEncode", requestInfo.ToJsonString());
+            }
             try
             {
                 byte[] sendData = requestInfo.ToByte<Message.RequestInfo>();
@@ -556,6 +582,7 @@ namespace BA.Framework.IMLib
 
                 m_Client.BeginSend(sendData, 0, sendData.Length, SocketFlags.None, null, m_Client);
 
+                UpdateTimeForInitiativePing();
             }
             catch (Exception ex)
             {
@@ -567,6 +594,44 @@ namespace BA.Framework.IMLib
 
         }
 
+        private void UpdateTimeForInitiativePing()
+        {
+            if (this.clientPingMode == PingMode.Initiative)
+            {
+                _lastSendTime = DateTime.Now;
+            }
+        }
+        private void SendPing()
+        {
+            if (m_Client != null && m_Client.Connected && m_User.IsAuthenticated && ClientPingMode == PingMode.Initiative)
+            {
+
+                if (_lastSendTime.AddSeconds(PingInterval) > DateTime.Now)
+                {
+                    //未到时间
+                    return;
+                }
+
+                try
+                {
+                    byte[] sendData = PingData.ToByte();
+                    m_Client.BeginSend(sendData, 0, sendData.Length, SocketFlags.None, null, m_Client);
+
+                    UpdateTimeForInitiativePing();
+                    LogOpInfo("Send--Ping", pingData);
+
+                }
+                catch (Exception ex)
+                {
+
+                }
+            }
+            else
+            {
+                PingTimer.Stop();
+            }
+
+        }
         private void LogOpInfo(string opType, string log)
         {
             if (OnLog != null)
@@ -764,16 +829,15 @@ namespace BA.Framework.IMLib
 
             m_LastPingTime = DateTime.Now;//采用客户端时间
 
+            UpdateTimeForInitiativePing();
+
             var baseResponseInfo = bufferMessage.ToObject<Message.BaseMessageInfo>();
+
             switch (baseResponseInfo.MsgType)
             {
                 case MessageType.Ack:
                     ProcessMessage_ACK(bufferMessage);
                     break;
-                //case MessageType.Connect:
-                //    break;
-                //case MessageType.Disconnect:
-                //    break;
                 case MessageType.Ping:
                     ProcessMessage_Ping(bufferMessage);
                     break;
@@ -788,6 +852,7 @@ namespace BA.Framework.IMLib
                 case MessageType.Leave:
                 case MessageType.Transfer:
                 case MessageType.Link:
+                case MessageType.Kill:
                 case MessageType.Custom:
                     ProcessMessage_Response(bufferMessage);
                     break;
@@ -796,14 +861,6 @@ namespace BA.Framework.IMLib
                 default:
                     break;
             }
-            //if (baseResponseInfo.MsgType == MessageType.Ack)
-            //{
-            //    ProcessMessage_ACK(bufferMessage);
-            //}
-            //else
-            //{
-            //    ProcessMessage_Response(bufferMessage);
-            //}
         }
 
         /// <summary>
@@ -816,7 +873,6 @@ namespace BA.Framework.IMLib
             if (IsAvailable)
             {
                 m_LastPingTime = DateTime.Now;//采用客户端时间
-                // TimeStamp.UnixTimestampToDateTime(DateTime.Now, responseInfo.MsgTime);
             }
         }
 
@@ -827,6 +883,21 @@ namespace BA.Framework.IMLib
         private void ProcessMessage_Response(string bufferMessage)
         {
             var responseInfo = bufferMessage.ToObject<Message.ResponseInfo>();
+            if (EnableEncrypt && responseInfo.Data != null)
+            {
+                try
+                {
+                    dynamic deString = CommonCryptoService.Decrypt_DES(responseInfo.Data.ToString(), responseInfo.MessageId);
+                    responseInfo.Data = CommonExt.JsonStringToDynamic(deString.ToString());
+                    LogOpInfo("Receive--Decode", responseInfo.ToJsonString());
+                }
+                catch (Exception ex)
+                {
+                    LogInfo("用户：DeCryptOp异常", ex);
+                    //throw ex;//抛出用户异常
+                }
+            }
+
             if (IsFileMessage(responseInfo.MsgType))
             {
                 //用户自己根据url下载，无需处理
@@ -853,6 +924,21 @@ namespace BA.Framework.IMLib
         private void ProcessMessage_ACK(string bufferMessage)
         {
             var responseAckInfo = bufferMessage.ToObject<Message.ResponseAckInfo>();
+            if (EnableEncrypt && responseAckInfo.Data != null)
+            {
+                try
+                {
+                    dynamic deString = CommonCryptoService.Decrypt_DES(responseAckInfo.Data.ToString(), responseAckInfo.MessageId);
+                    responseAckInfo.Data = CommonExt.JsonStringToDynamic(deString.ToString());
+                    LogOpInfo("Receive--Decode", responseAckInfo.ToJsonString());
+                }
+                catch (Exception ex)
+                {
+                    LogInfo("用户：DeCryptOp异常", ex);
+                    //throw ex;//抛出用户异常
+                }
+            }
+
             var requestInfo = m_SendBuffer.FirstOrDefault(x => x.MessageId == responseAckInfo.MessageId);
             if (requestInfo != null)
             {
@@ -867,7 +953,6 @@ namespace BA.Framework.IMLib
                 }
             }
         }
-
 
 
         /// <summary>
@@ -887,20 +972,16 @@ namespace BA.Framework.IMLib
                 if (responseAckInfo.DataDict.ContainsKey("upload_url"))
                 {
                     object upload_url = responseAckInfo.DataDict["upload_url"];
-                    //((Newtonsoft.Json.Linq.JObject)(responseAckInfo.Data)).GetValue("upload_url");
                     if (upload_url != null
                         && !string.IsNullOrWhiteSpace(upload_url.ToString()))
                     {
-                        //Upload(info);
                         Upload(info.IMRequest.MessageId, upload_url.ToString(), info.IMRequest.Data.path);
-                        //UploadFile(info.IMRequest.MessageId, upload_url.ToString(), info.IMRequest.Data.path);
                         return;
                     }
                 }
 
 
             }
-            //info.IMRequest.Callback(info.IMRequest, info.IMResponse);
         }
 
         #endregion
@@ -1276,106 +1357,6 @@ namespace BA.Framework.IMLib
             }
         }
         #endregion
-
-        //public string ServerHttpUrl { get; set; }
-
-        //private bool UploadFile(string msg_id, string upload_url, string path)
-        //{
-        //    FileMessageInfo info = FileMessageInfo.Create(upload_url);
-        //    info.MessageId = msg_id;
-        //    info.ProcessType = FileProcessType.UPLOAD;
-        //    info.Client.UploadProgressChanged += UploadProgressChanged;
-        //    //info.Client.UploadDataCompleted += UploadDataCompleted;
-        //    info.Client.UploadFileAsync(new Uri(upload_url), path);
-        //    info.Status = 1;
-        //    _fileMsgQueue.Add(info);
-        //    return true;
-        //}
-
-        //private bool Upload_Data(MessageContext contextInfo)
-        //{
-        //    FileMessageInfo info = FileMessageInfo.Create(contextInfo.IMResponse.Data.upload_url.ToString());
-        //    info.MessageId = contextInfo.IMRequest.MessageId;
-        //    info.ProcessType = FileProcessType.UPLOAD;
-        //    string path = contextInfo.IMRequest.Data.path;
-        //    int leftLength = 100;
-        //    byte[] fileData = File.ReadAllBytes(path).Skip(leftLength).ToArray();
-        //    info.Client.UploadProgressChanged += webClient_UploadProgressChanged;
-        //    info.Client.UploadDataCompleted += Client_UploadDataCompleted;
-        //    contextInfo.IMRequest.RelateFileInfo = info;
-        //    info.Client.UploadDataAsync(new Uri(contextInfo.IMResponse.Data.upload_url.ToString()), "POST", fileData, contextInfo);
-        //    info.Status = 1;
-        //    _fileMsgQueue.Add(info);
-        //    return true;
-        //}
-        //void Client_UploadDataCompleted(object sender, UploadDataCompletedEventArgs e)
-        //{
-        //    var contextInfo = e.UserState as MessageContext;
-        //    var fileMsgInfo = contextInfo.IMRequest.RelateFileInfo;
-        //    if (e.Error != null)
-        //    {
-        //        fileMsgInfo.Status = 4;
-        //        contextInfo.IMRequest.Callback(contextInfo.IMRequest, new ResponseAckInfo() { Data = e.Error, MessageId = contextInfo.IMRequest.MessageId, MsgType = MessageType.Ack, Status = ResponseCode.TIMEOUT });
-
-        //        //暂时不传递到异常事件中去
-        //        //OnError(sender, new ErrorEventArgs() { ExceptionInfo = e.Error, MsgId = fileMsgInfo.MessageId, ProcessType = fileMsgInfo.ProcessType });
-        //    }
-        //    else
-        //    {
-        //        fileMsgInfo.Status = 2;
-        //        contextInfo.IMRequest.Callback(contextInfo.IMRequest, contextInfo.IMResponse);
-        //    }
-        //}
-
-
-        //void Client_UploadFileCompleted(object sender, UploadFileCompletedEventArgs e)
-        //{
-        //    var contextInfo = e.UserState as MessageContext;
-        //    var fileMsgInfo = contextInfo.IMRequest.RelateFileInfo;
-        //    if (e.Error != null)
-        //    {
-        //        fileMsgInfo.Status = 4;
-        //        contextInfo.IMRequest.Callback(contextInfo.IMRequest, new ResponseAckInfo() { Data = e.Error, MessageId = contextInfo.IMRequest.MessageId, MsgType = MessageType.Ack, Status = ResponseCode.TIMEOUT });
-
-        //        //暂时不传递到异常事件中去
-        //        //OnError(sender, new ErrorEventArgs() { ExceptionInfo = e.Error, MsgId = fileMsgInfo.MessageId, ProcessType = fileMsgInfo.ProcessType });
-        //    }
-        //    else
-        //    {
-        //        fileMsgInfo.Status = 2;
-        //        contextInfo.IMRequest.Callback(contextInfo.IMRequest, contextInfo.IMResponse);
-        //    }
-        //    //fileMsgInfo.Client.Dispose();
-        //}
-
-        //void webClient_UploadProgressChanged(object sender, UploadProgressChangedEventArgs e)
-        //{
-        //    var contextInfo = e.UserState as MessageContext;
-        //    OnUpload(contextInfo.IMRequest.MessageId, e.BytesSent, e.TotalBytesToSend);
-        //}
-
-        //public string DownloadPath { get; set; }
-
-        //public async Task<bool> Upload(string path, Action<object, UploadProgressChangedEventArgs> uploadProgressChanged, Action<object, UploadFileCompletedEventArgs> uploadFileCompleted)
-        //{
-        //    WebClient webClient = new WebClient();
-        //    webClient.Credentials = CredentialCache.DefaultCredentials;
-        //    await webClient.UploadFileTaskAsync(new Uri(path), "POST", path);
-        //    webClient.UploadProgressChanged += webClient_UploadProgressChanged;
-        //    return true;
-
-        //}
-        //public IMServer(string ipAddress, int port)
-        //{
-        //    this.IpAddress = ipAddress;
-        //    this.Port = port;
-        //    _client = new Socket(SocketType.Stream, ProtocolType.Tcp);
-
-        //    _user = new UserIdentity();
-        //    _sendBuffer = new ConcurrentBag<RequestInfo>();
-        //    _receiveBuffer = new ConcurrentQueue<string>();
-        //    _fileMsgQueue = new ConcurrentBag<FileMessageInfo>();
-        //}
 
         public void Dispose()
         {

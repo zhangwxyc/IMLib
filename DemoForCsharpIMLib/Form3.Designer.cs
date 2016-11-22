@@ -58,6 +58,8 @@
             this.cbIsLoop = new System.Windows.Forms.CheckBox();
             this.tb_Loop = new System.Windows.Forms.TextBox();
             this.tb_Innerval = new System.Windows.Forms.TextBox();
+            this.cbEncode = new System.Windows.Forms.CheckBox();
+            this.btn_Crypt = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // tb_Ip
@@ -66,7 +68,7 @@
             this.tb_Ip.Name = "tb_Ip";
             this.tb_Ip.Size = new System.Drawing.Size(153, 21);
             this.tb_Ip.TabIndex = 0;
-            this.tb_Ip.Text = "192.168.87.21";
+            this.tb_Ip.Text = "172.20.100.113";
             // 
             // label1
             // 
@@ -83,7 +85,7 @@
             this.tb_Port.Name = "tb_Port";
             this.tb_Port.Size = new System.Drawing.Size(72, 21);
             this.tb_Port.TabIndex = 2;
-            this.tb_Port.Text = "8282";
+            this.tb_Port.Text = "8888";
             // 
             // btn_Connect
             // 
@@ -324,11 +326,33 @@
             this.tb_Innerval.TabIndex = 18;
             this.tb_Innerval.Text = "0";
             // 
+            // cbEncode
+            // 
+            this.cbEncode.AutoSize = true;
+            this.cbEncode.Location = new System.Drawing.Point(333, 86);
+            this.cbEncode.Name = "cbEncode";
+            this.cbEncode.Size = new System.Drawing.Size(48, 16);
+            this.cbEncode.TabIndex = 19;
+            this.cbEncode.Text = "加密";
+            this.cbEncode.UseVisualStyleBackColor = true;
+            // 
+            // btn_Crypt
+            // 
+            this.btn_Crypt.Location = new System.Drawing.Point(60, 675);
+            this.btn_Crypt.Name = "btn_Crypt";
+            this.btn_Crypt.Size = new System.Drawing.Size(75, 23);
+            this.btn_Crypt.TabIndex = 20;
+            this.btn_Crypt.Text = "加解密";
+            this.btn_Crypt.UseVisualStyleBackColor = true;
+            this.btn_Crypt.Click += new System.EventHandler(this.btn_Crypt_Click);
+            // 
             // Form3
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(881, 694);
+            this.ClientSize = new System.Drawing.Size(881, 710);
+            this.Controls.Add(this.btn_Crypt);
+            this.Controls.Add(this.cbEncode);
             this.Controls.Add(this.tb_Innerval);
             this.Controls.Add(this.tb_Loop);
             this.Controls.Add(this.cbIsLoop);
@@ -360,7 +384,7 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.tb_Ip);
             this.Name = "Form3";
-            this.Text = "DEMO";
+            this.Text = "IM终端模拟器";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -399,6 +423,8 @@
         private System.Windows.Forms.CheckBox cbIsLoop;
         private System.Windows.Forms.TextBox tb_Loop;
         private System.Windows.Forms.TextBox tb_Innerval;
+        private System.Windows.Forms.CheckBox cbEncode;
+        private System.Windows.Forms.Button btn_Crypt;
     }
 }
 

@@ -26,5 +26,7 @@ namespace BA.Framework.IMLib.Message
         [JsonIgnore]
         public Action<RequestInfo, ResponseAckInfo> Callback { get; set; }
 
+        [JsonProperty("from_v")]
+        public string Version { get; set; }
     }
 }

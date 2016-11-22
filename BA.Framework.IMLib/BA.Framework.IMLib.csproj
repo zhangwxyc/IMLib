@@ -38,6 +38,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -45,6 +46,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Enums\PingMode.cs" />
+    <Compile Include="TransferEncrypt\CommonCryptoService.cs" />
     <Compile Include="CommonExt.cs" />
     <Compile Include="CreateBytes.cs" />
     <Compile Include="CustomEnumJsonConverter.cs" />
@@ -71,6 +74,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResponseCode.cs" />
     <Compile Include="TimeStamp.cs" />
+    <Compile Include="TransferEncrypt\IMessageEncrypt.cs" />
+    <Compile Include="TransferEncrypt\MessageEncrypt.cs" />
     <Compile Include="UserIdentity.cs" />
     <Compile Include="UserPermission.cs" />
     <Compile Include="WebClientV2.cs">

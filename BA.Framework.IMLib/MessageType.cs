@@ -48,6 +48,7 @@ namespace BA.Framework.IMLib
         //Vcard,
         Link,
         Custom,
+        Kill,
         UnKnown
     }
 }
