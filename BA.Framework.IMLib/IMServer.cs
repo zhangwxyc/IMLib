@@ -161,9 +161,9 @@ namespace BA.Framework.IMLib
             }
         }
 
-        private ConcurrentBag<RequestInfo> m_SendBuffer;
+        private ConcurrentDictionary<string, RequestInfo> m_SendBuffer;
 
-        private ConcurrentQueue<string> m_ReceiveBuffer;
+        //private ConcurrentQueue<string> m_ReceiveBuffer;
 
         private ConcurrentQueue<List<byte>> m_ReceiveBufferBytes;
         /// <summary>
@@ -208,8 +208,8 @@ namespace BA.Framework.IMLib
         public IMServer()
         {
             m_User = new UserIdentity();
-            m_SendBuffer = new ConcurrentBag<RequestInfo>();
-            m_ReceiveBuffer = new ConcurrentQueue<string>();
+            m_SendBuffer = new ConcurrentDictionary<string, RequestInfo>();
+            //m_ReceiveBuffer = new ConcurrentQueue<string>();
             m_ReceiveBufferBytes = new ConcurrentQueue<List<byte>>();
             m_FileMsgQueue = new ConcurrentBag<FileMessageInfo>();
             InitEncrypt();
@@ -404,7 +404,7 @@ namespace BA.Framework.IMLib
                 try
                 {
                     List<byte> leftBufferString = new List<byte>();
-                    while (IsAvailable || m_ReceiveBuffer.Count != 0)
+                    while (IsAvailable || m_ReceiveBufferBytes.Count != 0)
                     {
                         List<byte> bufferString = new List<byte>();
                         bool isSuccess = m_ReceiveBufferBytes.TryDequeue(out bufferString);
@@ -569,6 +569,20 @@ namespace BA.Framework.IMLib
                 RunUserCallback(callback, requestInfo, new ResponseAckInfo() { MessageId = requestInfo.MessageId, MsgType = MessageType.Ack, Status = ResponseCode.NO_PERMISSION });
                 return requestInfo.MessageId;
             }
+
+            //深拷贝到请求列表中
+            m_SendBuffer.TryAdd(requestInfo.MessageId, new RequestInfo()
+                {
+                    MessageId = requestInfo.MessageId,
+                    Callback = requestInfo.Callback,
+                    Data = requestInfo.Data,
+                    MsgType = requestInfo.MsgType,
+                    RelateFileInfo = requestInfo.RelateFileInfo,
+                    ToId = requestInfo.ToId,
+                    Version = requestInfo.Version,
+                    GroupId = requestInfo.GroupId
+                });
+
             if (EnableEncrypt)
             {
                 requestInfo.Data = EncryptAdapter.Encode(CommonExt.DynamicToJsonString(requestInfo.Data), requestInfo);
@@ -577,8 +591,6 @@ namespace BA.Framework.IMLib
             try
             {
                 byte[] sendData = requestInfo.ToByte<Message.RequestInfo>();
-
-                m_SendBuffer.Add(requestInfo);
 
                 m_Client.BeginSend(sendData, 0, sendData.Length, SocketFlags.None, null, m_Client);
 
@@ -939,7 +951,7 @@ namespace BA.Framework.IMLib
                 }
             }
 
-            var requestInfo = m_SendBuffer.FirstOrDefault(x => x.MessageId == responseAckInfo.MessageId);
+            var requestInfo = m_SendBuffer.FirstOrDefault(x => x.Key == responseAckInfo.MessageId).Value;
             if (requestInfo != null)
             {
                 MessageContext context = new MessageContext() { IMRequest = requestInfo, IMResponse = responseAckInfo };
@@ -951,6 +963,7 @@ namespace BA.Framework.IMLib
                 {//非文件类消息收到ack直接回调
                     requestInfo.Callback(requestInfo, responseAckInfo);
                 }
+                m_SendBuffer.TryRemove(responseAckInfo.MessageId, out requestInfo);
             }
         }
 

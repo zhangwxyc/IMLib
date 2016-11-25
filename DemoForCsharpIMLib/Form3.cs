@@ -111,7 +111,7 @@ namespace DemoForCsharpIMLib
 
         void m_server_OnReceive(MessageType arg1, string from, string group, string msg_id, int msg_time, object data)
         {
-             Log(string.Format("Server:{0}", new { type = arg1, from = from, group = group, msg_id = msg_id, msg_time = msg_time, data = data }.ToJsonString()));
+            // Log(string.Format("Server:{0}", new { type = arg1, from = from, group = group, msg_id = msg_id, msg_time = msg_time, data = data }.ToJsonString()));
             switch (arg1)
             {
                 case MessageType.Ack:
@@ -163,7 +163,7 @@ namespace DemoForCsharpIMLib
             m_server.EnableEncrypt = cbEncode.Checked;
             if (cbEncode.Checked)
             {
-                m_server.Crypt_Version = "2.0";
+                m_server.Crypt_Version = "2";
             }
             else
             {

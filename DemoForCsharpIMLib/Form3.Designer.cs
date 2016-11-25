@@ -227,7 +227,6 @@
             this.tb_group.Name = "tb_group";
             this.tb_group.Size = new System.Drawing.Size(129, 21);
             this.tb_group.TabIndex = 9;
-            this.tb_group.Text = "a";
             // 
             // btn_clearLog
             // 
