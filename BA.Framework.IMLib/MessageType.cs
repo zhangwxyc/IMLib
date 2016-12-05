@@ -49,6 +49,7 @@ namespace BA.Framework.IMLib
         Link,
         Custom,
         Kill,
+        Vtext,
         UnKnown
     }
 }

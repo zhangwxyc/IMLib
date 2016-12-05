@@ -55,7 +55,7 @@ namespace BA.Framework.IMLib
         /// <summary>
         /// 默认初始1.0,可在连接前设置
         /// </summary>
-        public string Crypt_Version { get; set; }
+        public string Encrypt_Version { get; set; }
 
         private bool enableEncrypt;
         /// <summary>
@@ -218,7 +218,7 @@ namespace BA.Framework.IMLib
 
         private void InitEncrypt()
         {
-            Crypt_Version = "1.0";
+            Encrypt_Version = "1.0";
             //设置默认加密方式
             EncryptAdapter = new MessageEncrypt();
         }
@@ -266,7 +266,7 @@ namespace BA.Framework.IMLib
                     accessToken = accessToken,
                     lastTick = lastTick
                 },
-                Version = Crypt_Version
+                Version = Encrypt_Version
             };
 
             if (IsAvailable)
@@ -866,6 +866,7 @@ namespace BA.Framework.IMLib
                 case MessageType.Link:
                 case MessageType.Kill:
                 case MessageType.Custom:
+                case MessageType.Vtext:
                     ProcessMessage_Response(bufferMessage);
                     break;
                 case MessageType.UnKnown:
