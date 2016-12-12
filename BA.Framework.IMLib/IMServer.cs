@@ -268,6 +268,12 @@ namespace BA.Framework.IMLib
                 },
                 Version = Encrypt_Version
             };
+            var preRequestInfo = new Message.RequestInfo()
+            {
+                MsgType = MessageType.Connect,
+                Data = requestInfo.Data,
+                Version = Encrypt_Version
+            };
 
             if (IsAvailable)
             {
@@ -283,6 +289,7 @@ namespace BA.Framework.IMLib
             try
             {
                 m_Client = new Socket(SocketType.Stream, ProtocolType.Tcp);
+
                 if (EnableEncrypt)
                 {
                     requestInfo.Data = EncryptAdapter.Encode(CommonExt.DynamicToJsonString(requestInfo.Data), requestInfo);
@@ -337,13 +344,13 @@ namespace BA.Framework.IMLib
                         m_Client.Disconnect(true);
                     }
 
-                    RunUserCallback(callback, requestInfo, responseInfo);
+                    RunUserCallback(callback, preRequestInfo, responseInfo);
                 }
             }
             catch (Exception ex)
             {
                 LogInfo("ConnectError", ex);
-                RunUserCallback(callback, requestInfo, new ResponseAckInfo() { MsgType = MessageType.Ack, Status = ResponseCode.CLINET_ERR, Data = ex.Message });
+                RunUserCallback(callback, preRequestInfo, new ResponseAckInfo() { MsgType = MessageType.Ack, Status = ResponseCode.CLINET_ERR, Data = ex.Message });
             }
 
             return result;
@@ -554,6 +561,15 @@ namespace BA.Framework.IMLib
                 Data = data,
                 Callback = callback
             };
+            var preRequestInfo = new Message.RequestInfo()
+            {
+                MsgType = type,
+                //MessageId = TimeStamp.Create(),
+                ToId = to,
+                GroupId = group,
+                Data = data,
+                Callback = callback
+            };
 
             LogOpInfo("Send", requestInfo.ToJsonString());
 
@@ -599,7 +615,7 @@ namespace BA.Framework.IMLib
             catch (Exception ex)
             {
                 ProcessError(requestInfo.MessageId, ex);
-                RunUserCallback(callback, requestInfo, new ResponseAckInfo() { MessageId = requestInfo.MessageId, MsgType = MessageType.Ack, Status = ResponseCode.TIMEOUT });
+                RunUserCallback(callback, preRequestInfo, new ResponseAckInfo() { MessageId = requestInfo.MessageId, MsgType = MessageType.Ack, Status = ResponseCode.TIMEOUT });
             }
 
             return requestInfo.MessageId;

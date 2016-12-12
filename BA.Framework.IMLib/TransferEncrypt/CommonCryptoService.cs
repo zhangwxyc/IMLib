@@ -7,7 +7,7 @@ using System.Web.Security;
 
 namespace BA.Framework.IMLib.TransferEncrypt
 {
-    internal class CommonCryptoService
+    public class CommonCryptoService
     {
 
         private static byte[] IV_KEY = new byte[] { 18, 52, 86, 120, 144, 171, 205, 239 };
@@ -86,6 +86,7 @@ namespace BA.Framework.IMLib.TransferEncrypt
             string result;
             using (DESCryptoServiceProvider dESCryptoServiceProvider = new DESCryptoServiceProvider())
             {
+                key = getKey(key);
                 byte[] bytes = Encoding.UTF8.GetBytes(str);
                 dESCryptoServiceProvider.Key = Encoding.ASCII.GetBytes(key.Substring(0, 8));
                 dESCryptoServiceProvider.IV = CommonCryptoService.IV_KEY;
@@ -111,6 +112,7 @@ namespace BA.Framework.IMLib.TransferEncrypt
             string result;
             using (DESCryptoServiceProvider dESCryptoServiceProvider = new DESCryptoServiceProvider())
             {
+                key = getKey(key);
                 dESCryptoServiceProvider.Key = Encoding.ASCII.GetBytes(key.Substring(0, 8));
                 dESCryptoServiceProvider.IV = CommonCryptoService.IV_KEY;
                 dESCryptoServiceProvider.Mode = CipherMode.ECB;
@@ -131,6 +133,62 @@ namespace BA.Framework.IMLib.TransferEncrypt
                 result = @string;
             }
             return result;
+        }
+
+        public static string getKey(string sKey)
+        {
+            string text = sKey + getStringHashCode(sKey);
+            text = Create(text, KeyFormat.None);
+            StringBuilder stringBuilder = new StringBuilder();
+            int num = chars.Length;
+            for (int i = 0; i < 8; i++)
+            {
+                string value = text.Substring(i * 4, 4);
+                int num2 = Convert.ToInt32(value, 16);
+                stringBuilder.Append(chars[num2 % num]);
+            }
+            return stringBuilder.ToString();
+        }
+        private static int getStringHashCode(string str)
+        {
+            byte[] bytes = Encoding.Default.GetBytes(str);
+            int num = 0;
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                num += getHashCode(bytes[i]);
+            }
+            return num;
+        }
+
+        private static int getHashCode(byte b)
+        {
+            return (int)b << 2 ^ 37;
+        }
+        public static string Create(string key, KeyFormat formater = KeyFormat.ToUpper)
+        {
+            string result;
+            switch (formater)
+            {
+                case KeyFormat.None:
+                    result = FormsAuthentication.HashPasswordForStoringInConfigFile(key, "MD5");
+                    break;
+                case KeyFormat.ToUpper:
+                    result = FormsAuthentication.HashPasswordForStoringInConfigFile(key.ToUpper(), "MD5");
+                    break;
+                case KeyFormat.ToLower:
+                    result = FormsAuthentication.HashPasswordForStoringInConfigFile(key.ToLower(), "MD5");
+                    break;
+                default:
+                    result = null;
+                    break;
+            }
+            return result;
+        }
+        public enum KeyFormat
+        {
+            None,
+            ToUpper,
+            ToLower
         }
     }
 }

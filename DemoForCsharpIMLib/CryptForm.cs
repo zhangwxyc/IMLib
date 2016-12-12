@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
+using BA.Framework.IMLib.TransferEncrypt;
 namespace DemoForCsharpIMLib
 {
     public partial class CryptForm : Form

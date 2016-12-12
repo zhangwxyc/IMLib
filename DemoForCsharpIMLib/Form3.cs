@@ -22,7 +22,7 @@ namespace DemoForCsharpIMLib
         {
             InitializeComponent();
             m_server = new IMServer();
-            m_server.Crypt_Version = "1.0";
+            m_server.Encrypt_Version = "1.0";
             m_server.OnDisconnect += m_server_OnDisconnect;
             m_server.OnDownload += m_server_OnDownload;
             m_server.OnError += m_server_OnError;
@@ -163,11 +163,11 @@ namespace DemoForCsharpIMLib
             m_server.EnableEncrypt = cbEncode.Checked;
             if (cbEncode.Checked)
             {
-                m_server.Crypt_Version = "2";
+                m_server.Encrypt_Version = "2";
             }
             else
             {
-                m_server.Crypt_Version = "1.0";
+                m_server.Encrypt_Version = "1.0";
             }
             bool isConnected = m_server.Connect(tb_Ip.Text, int.Parse(tb_Port.Text), tbUtype.Text, tb_userName.Text, "DEVICEID:32443234234234;PUSHCODE:2342342342342", tb_token.Text, 0, Connected);
         }
